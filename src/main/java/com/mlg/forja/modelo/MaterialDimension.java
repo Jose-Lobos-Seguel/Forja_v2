@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 @Entity
-@Table(name = "clan")
+@Table(name = "material_dimension")
 public class MaterialDimension 
 {
     @Id

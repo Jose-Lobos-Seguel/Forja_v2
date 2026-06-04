@@ -1,0 +1,7 @@
+TAREASSSS 
+
+1 - Arreglar id de enano / en proceso
+2 - refactorizar metodo actualizar runa, actualizar mostrando solo el id del equipamiento no su json completo / en proceso
+3 - refactorizar logica de modo que si un enano es borrado aun asi se muestre como forjador de los equipamientos que haya forjado / en proceso
+4 - refactorizar logica de relacion entre enano y equipamiento no se puede modificar forjador posterior a la creacion del equipamiento
+    para crear un equipamiento DEBE existir un enano previo que se le asignara como forjador / en proceso
