@@ -101,38 +101,4 @@ public class EquipamientoController
                     .body(e.getMessage());
         }
     }
-
-    @PutMapping("/{equipamientoId}/forjador/{enanoId}")
-    public ResponseEntity<String> asignarForjador(@PathVariable Integer equipamientoId,@PathVariable Integer enanoId)
-        {
-        try
-        {
-            String resultado = equipamientoService.asignarForjador(equipamientoId, enanoId);
-
-            return ResponseEntity.ok(resultado);
-        }
-        catch(RuntimeException e)
-        {
-            return ResponseEntity
-                .badRequest()
-                .body(e.getMessage());
-        }
-    }
-    @DeleteMapping("/{equipamientoId}/forjador")
-    public ResponseEntity<String> removerForjador(@PathVariable Integer equipamientoId)
-        {
-        try
-        {
-            String resultado = equipamientoService
-                .removerForjador(equipamientoId);
-
-            return ResponseEntity.ok(resultado);
-        }
-        catch(RuntimeException e)
-        {
-            return ResponseEntity
-                .badRequest()
-                .body(e.getMessage());
-        }
-    }
 }
