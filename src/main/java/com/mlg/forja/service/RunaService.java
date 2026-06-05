@@ -22,19 +22,17 @@ public class RunaService
     public List<RunaDTO> obtenerTodas() 
     {
         return runaRepository.findAll().stream()
-            .map(this::convertirADTO)
+            .map(this::convertirDTO)
             .toList();
     }
 
-    public RunaDTO buscarPorId(Integer id) {
+    public RunaDTO buscarPorId(Integer id){
         Runa runa = runaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡Runa no encontrada!"));
-        return convertirADTO(runa);
+        return convertirDTO(runa);
     }
 
-    public Runa actualizar(Integer id, Runa runaActualizada) 
-    {
-
+    public RunaDTO actualizar(Integer id, Runa runaActualizada){
     Runa runa = runaRepository.findById(id)
         .orElseThrow(() ->
             new RuntimeException("No existe la runa con ID: " + id));
@@ -42,24 +40,21 @@ public class RunaService
     runa.setNombre(runaActualizada.getNombre());
     runa.setElemento(runaActualizada.getElemento());
 
-    return runaRepository.save(runa);
-
+    runaRepository.save(runa);
+    return convertirDTO(runa);
     }
 
-    public Runa guardar(Runa runa) 
-    {
+    public Runa guardar(Runa runa){
         return runaRepository.save(runa);
     }
-
-    public String eliminar(Integer id) {
+    public String eliminar(Integer id){
         Runa runa = runaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No existe la runa con ID: " + id));
         runaRepository.delete(runa);
         return "La runa '" + runa.getNombre() + "' ha sido destruida.";
     }
 
-    private RunaDTO convertirADTO(Runa runa) 
-    {
+    private RunaDTO convertirDTO(Runa runa){
         RunaDTO dto = new RunaDTO();
         dto.setId(runa.getId());
         dto.setNombre(runa.getNombre());

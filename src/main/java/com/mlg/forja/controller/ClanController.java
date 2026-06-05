@@ -18,6 +18,8 @@ import com.mlg.forja.modelo.Clan;
 import com.mlg.forja.service.ClanService;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 @RestController
 @RequestMapping("/forja/api/v1/clanes")
@@ -80,5 +82,10 @@ public class ClanController {
         List<EnanoDTO> miembros = clanService.buscarMiembros(id);
 
         return ResponseEntity.ok(miembros);
+    }
+
+    @PutMapping("path/{id}")
+    public String putMethodName(@PathVariable String id, @RequestBody String entity) {
+        return entity;
     }
 }

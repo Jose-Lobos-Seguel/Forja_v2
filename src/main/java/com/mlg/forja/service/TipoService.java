@@ -4,7 +4,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.mlg.forja.modelo.Tipo;
+import com.mlg.forja.DTO.ClanDTO;
 import com.mlg.forja.DTO.TipoDTO;
+import com.mlg.forja.modelo.Clan;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.repository.TipoRepository;
 import jakarta.transaction.Transactional;
@@ -26,6 +28,17 @@ public class TipoService {
        Tipo tipo = tipoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("El tipo de equipamiento que esta buscando no ha sido forjado aun"));
         return convertirDTO(tipo);
+    }
+
+    public TipoDTO actualizar(Integer id, Tipo tipoActualizado) {
+        Clan clan = tipoRepository.findById(id)
+        .orElseThrow(()
+        -> new RuntimeException("No existe el Clan con ID: " + id));
+                    
+    clan.setNombre(clanActualizado.getNombre());
+
+    clanRepository.save(clan);
+    return convertirDTO(clan);
     }
 
     public String eliminarTipo(Integer id) {

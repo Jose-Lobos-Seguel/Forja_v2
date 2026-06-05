@@ -66,7 +66,7 @@ public class RunaController {
     {
         try 
         {
-            Runa runa = runaService.actualizar(id,runaActualizada);
+            RunaDTO runa = runaService.actualizar(id,runaActualizada);
 
             return ResponseEntity.ok(runa);
 

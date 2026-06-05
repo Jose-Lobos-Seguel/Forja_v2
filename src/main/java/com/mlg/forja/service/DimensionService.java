@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mlg.forja.DTO.ClanDTO;
 import com.mlg.forja.DTO.DimensionDTO;
+import com.mlg.forja.modelo.Clan;
 import com.mlg.forja.modelo.Dimension;
 import com.mlg.forja.repository.DimensionRepository;
 
@@ -19,14 +21,14 @@ public class DimensionService {
 
     public List<DimensionDTO> obtenerTodas() {
         return dimensionRepository.findAll().stream()
-                .map(this::convertirADTO)
+                .map(this::convertirDTO)
                 .toList();
     }
 
     public DimensionDTO buscarPorId(Integer id) {
         Dimension dimension = dimensionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡La dimensión no existe!"));
-        return convertirADTO(dimension);
+        return convertirDTO(dimension);
     }
 
     public Dimension guardarDimension(Dimension dimension)
@@ -54,6 +56,18 @@ public class DimensionService {
         return dimensionRepository.save(dimension);
     }
 
+    public DimensionDTO actualizar(Integer id, Dimension dimensionActualizada) {
+        Dimension dimension = dimensionRepository.findById(id)
+        .orElseThrow(()
+        -> new RuntimeException("No existe la Dimension con ID: " + id));
+                    
+    dimension.setNombre(dimensionActualizada.getNombre());
+    dimension.setDescripcion(dimensionActualizada.getDescripcion());
+    
+    dimensionRepository.save(dimension);
+    return convertirDTO(dimension);
+    }
+
     public String eliminarDimension(Integer id) 
     {
         try 
@@ -69,7 +83,7 @@ public class DimensionService {
         }
     }
 
-    private DimensionDTO convertirADTO(Dimension dimension) {
+    private DimensionDTO convertirDTO(Dimension dimension) {
         DimensionDTO dto = new DimensionDTO();
         dto.setId(dimension.getId());
         dto.setNombre(dimension.getNombre());

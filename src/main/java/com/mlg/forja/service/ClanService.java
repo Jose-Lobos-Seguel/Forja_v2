@@ -16,15 +16,13 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public class ClanService {
-
     @Autowired
     private EnanoRepository enanoRepository;
 
     @Autowired
     private ClanRepository clanRepository;
 
-    public List<ClanDTO> obtenerTodos(){
-
+    public List<ClanDTO> obtenerTodos() {
         return clanRepository.findAll()
                 .stream()
                 .map(this::convertirDTO)
@@ -32,10 +30,8 @@ public class ClanService {
     }
 
     public ClanDTO buscarPorId(Integer id) {
-
-       Clan clan = clanRepository.findById(id)
+          Clan clan = clanRepository.findById(id)
              .orElseThrow(() -> new RuntimeException("El clan de enanos que esta buscando no ha sido esclavizado aun"));
-
        return convertirDTO(clan);
     }
 
@@ -57,11 +53,10 @@ public class ClanService {
     }
     
     public Clan guardarClan(Clan clan) {
-
        return clanRepository.save(clan);
     }
 
-    public List<ClanDTO> buscarPorNombre(String nombre){
+    public List<ClanDTO> buscarPorNombre(String nombre) {
 
        return clanRepository.findByNombre(nombre)
                .stream()
@@ -69,8 +64,7 @@ public class ClanService {
                .toList();
     }
 
-    public List<EnanoDTO> buscarMiembros(Integer clanId)
-    {
+    public List<EnanoDTO> buscarMiembros(Integer clanId) {
     Clan clan = clanRepository.findById(clanId)
             .orElseThrow(() -> new RuntimeException("El clan no existe."));
 
@@ -79,15 +73,25 @@ public class ClanService {
             .map(this::convertirEnanoDTO)
             .toList();
     }
-    public ClanDTO convertirDTO(Clan clan)
-    {
+
+    public ClanDTO actualizar(Integer id, Clan clanActualizado) {
+        Clan clan = clanRepository.findById(id)
+        .orElseThrow(()
+        -> new RuntimeException("No existe el Clan con ID: " + id));
+                    
+    clan.setNombre(clanActualizado.getNombre());
+
+    clanRepository.save(clan);
+    return convertirDTO(clan);
+    }
+
+    public ClanDTO convertirDTO(Clan clan) {
         ClanDTO dto = new ClanDTO();
 
         dto.setId(clan.getId());
         dto.setNombre(clan.getNombre());
 
-        if(clan.getEnanos() != null)
-        {
+        if(clan.getEnanos() != null) {
             List<Integer> enanosIds = clan.getEnanos()
                     .stream()
                     .map(Enano::getId)
@@ -95,12 +99,10 @@ public class ClanService {
 
             dto.setEnanosIds(enanosIds);
         }
-
         return dto;
     }
 
-    public EnanoDTO convertirEnanoDTO(Enano enano)
-    {
+    public EnanoDTO convertirEnanoDTO(Enano enano) {
         EnanoDTO dto = new EnanoDTO();
 
         dto.setId(enano.getId());
@@ -109,12 +111,10 @@ public class ClanService {
         dto.setTitulo(enano.getTitulo());
         dto.setEspecialidad(enano.getEspecialidad());
 
-        if(enano.getClan() != null)
-        {
+        if(enano.getClan() != null){
             dto.setClanId(enano.getClan().getId());
             dto.setClanNombre(enano.getClan().getNombre());
         }
-
         return dto;
     }
 }
