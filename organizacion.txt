@@ -7,3 +7,10 @@ TAREASSSS
     para crear un equipamiento DEBE existir un enano previo que se le asignara como forjador / en proceso
 5 - ORDENAR METODOS EN EL CONTROLER por Get, post, put, delete / en proceso
 6 - refactorizar los put deben devolver DTO / en proceso
+7 - Organizar un script sql para testeo de HTTPs (los tepes)
+8 - eliminar metodos https redudantes
+
+
+
+
+LINK SWAGGER POR SI ACASO "http://localhost:8080/doc/swagger-ui/index.html#/"
