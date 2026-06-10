@@ -10,6 +10,7 @@ import com.mlg.forja.modelo.Dimension;
 import com.mlg.forja.modelo.Material;
 import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.repository.DimensionRepository;
+import com.mlg.forja.repository.EquipamientoRepository;
 import com.mlg.forja.repository.MaterialDimensionRepository;
 import com.mlg.forja.repository.MaterialRepository;
 
@@ -17,8 +18,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class MaterialService 
-{
+public class MaterialService {
     @Autowired
     private MaterialDimensionRepository materialDimensionRepository;
 
@@ -27,6 +27,9 @@ public class MaterialService
 
     @Autowired
     private MaterialRepository materialRepository;
+
+    @Autowired
+    private EquipamientoRepository equipamientoRepository;
 
     public List<MaterialDTO> obtenerTodos() {
         return materialRepository.findAll().stream()
@@ -40,8 +43,31 @@ public class MaterialService
         return convertirADTO(material);
     }
 
-    public Material guardar(Material material) {
-        return materialRepository.save(material);
+    public MaterialDTO guardar(MaterialDTO materialDTO) {
+        Material material = new Material();
+        material.setNombre(materialDTO.getNombre());
+
+        if (materialDTO.getEquipamientoId() != null) {
+            material.setEquipamiento(equipamientoRepository.findById(materialDTO.getEquipamientoId())
+                    .orElseThrow(() -> new RuntimeException("No existe el equipamiento con ID: " + materialDTO.getEquipamientoId())));
+        }
+
+        return convertirADTO(materialRepository.save(material));
+    }
+
+    public MaterialDTO actualizarMaterial(Integer id, MaterialDTO materialDTO) {
+        Material material = materialRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No existe el material con ID: " + id));
+
+        if (materialDTO.getNombre() != null) {
+            material.setNombre(materialDTO.getNombre());
+        }
+        if (materialDTO.getEquipamientoId() != null) {
+            material.setEquipamiento(equipamientoRepository.findById(materialDTO.getEquipamientoId())
+                    .orElseThrow(() -> new RuntimeException("No existe el equipamiento con ID: " + materialDTO.getEquipamientoId())));
+        }
+
+        return convertirADTO(materialRepository.save(material));
     }
 
     public String eliminarMaterial(Integer id) 

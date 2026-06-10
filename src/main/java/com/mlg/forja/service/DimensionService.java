@@ -5,9 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mlg.forja.DTO.ClanDTO;
 import com.mlg.forja.DTO.DimensionDTO;
-import com.mlg.forja.modelo.Clan;
 import com.mlg.forja.modelo.Dimension;
 import com.mlg.forja.repository.DimensionRepository;
 
@@ -21,51 +19,39 @@ public class DimensionService {
 
     public List<DimensionDTO> obtenerTodas() {
         return dimensionRepository.findAll().stream()
-                .map(this::convertirDTO)
+                .map(this::convertirADTO)
                 .toList();
     }
 
     public DimensionDTO buscarPorId(Integer id) {
         Dimension dimension = dimensionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡La dimensión no existe!"));
-        return convertirDTO(dimension);
+        return convertirADTO(dimension);
     }
 
-    public Dimension guardarDimension(Dimension dimension)
+    public DimensionDTO guardarDimension(DimensionDTO dimensionDTO)
     {
-        return dimensionRepository.save(dimension);
+        Dimension dimension = new Dimension();
+        dimension.setNombre(dimensionDTO.getNombre());
+        dimension.setDescripcion(dimensionDTO.getDescripcion());
+
+        return convertirADTO(dimensionRepository.save(dimension));
     }
 
-    public Dimension actualizarDimension(Integer id, Dimension dimensionActualizada)
+    public DimensionDTO actualizarDimension(Integer id, DimensionDTO dimensionDTO)
     {
         Dimension dimension = dimensionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id" + id));
+            .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id " + id));
 
-        if(dimensionActualizada.getNombre() != null)
+        if(dimensionDTO.getNombre() != null)
         {
-            dimension.setNombre(dimensionActualizada.getNombre());
+            dimension.setNombre(dimensionDTO.getNombre());
         }
-        if(dimensionActualizada.getDescripcion() != null)
+        if(dimensionDTO.getDescripcion() != null)
         {
-            dimension.setDescripcion(dimensionActualizada.getDescripcion());
+            dimension.setDescripcion(dimensionDTO.getDescripcion());
         }
-        if(dimensionActualizada.getMateriales() != null)
-        {
-            dimension.setMateriales(dimensionActualizada.getMateriales());
-        }
-        return dimensionRepository.save(dimension);
-    }
-
-    public DimensionDTO actualizar(Integer id, Dimension dimensionActualizada) {
-        Dimension dimension = dimensionRepository.findById(id)
-        .orElseThrow(()
-        -> new RuntimeException("No existe la Dimension con ID: " + id));
-                    
-    dimension.setNombre(dimensionActualizada.getNombre());
-    dimension.setDescripcion(dimensionActualizada.getDescripcion());
-    
-    dimensionRepository.save(dimension);
-    return convertirDTO(dimension);
+        return convertirADTO(dimensionRepository.save(dimension));
     }
 
     public String eliminarDimension(Integer id) 
@@ -83,7 +69,7 @@ public class DimensionService {
         }
     }
 
-    private DimensionDTO convertirDTO(Dimension dimension) {
+    private DimensionDTO convertirADTO(Dimension dimension) {
         DimensionDTO dto = new DimensionDTO();
         dto.setId(dimension.getId());
         dto.setNombre(dimension.getNombre());

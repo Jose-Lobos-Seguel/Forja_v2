@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,15 +35,15 @@ public class TipoController {
     }
 
     @PostMapping
-    public Tipo guardarTipo(@RequestBody Tipo tipo) {
-        return tipoService.guardarTipo(tipo);
+    public TipoDTO guardarTipo(@RequestBody TipoDTO tipoDTO) {
+        return tipoService.guardarTipo(tipoDTO);
     }
 
-    @DeleteMapping("/{id}")
-    public String eliminarTipo(@PathVariable Integer id) {
-        return tipoService.eliminarTipo(id);
+    @PutMapping("/{id}")
+    public TipoDTO actualizarTipo(@PathVariable Integer id, @RequestBody TipoDTO tipoDTO) {
+        return tipoService.actualizarTipo(id, tipoDTO);
     }
-    
+
     @GetMapping("/buscar")
     public List<Tipo> buscarPorNombre(@RequestParam String nombre) {
         return tipoService.buscarPorNombre(nombre);
@@ -53,5 +54,10 @@ public class TipoController {
         Equipamiento equipamiento = new Equipamiento();
         equipamiento.setId(equipamiento_id);
         return tipoService.buscarPorEquipamiento(equipamiento);
-    }   
+    }
+
+    @DeleteMapping("/{id}")
+    public String eliminarTipo(@PathVariable Integer id) {
+        return tipoService.eliminarTipo(id);
+    }
 }

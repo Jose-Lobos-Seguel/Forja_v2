@@ -24,8 +24,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "enano")
-public class Enano 
-{
+public class Enano {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del enano

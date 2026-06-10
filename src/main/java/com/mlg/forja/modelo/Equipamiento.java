@@ -26,8 +26,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "equipamiento")
-public class Equipamiento 
-{
+public class Equipamiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del arma

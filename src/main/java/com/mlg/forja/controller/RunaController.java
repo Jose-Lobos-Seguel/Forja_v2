@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.RunaDTO;
-import com.mlg.forja.modelo.Runa;
 import com.mlg.forja.service.RunaService;
 
 @RestController
@@ -53,16 +52,16 @@ public class RunaController {
     }
 
     @PostMapping
-    public ResponseEntity<Runa> guardar(
-            @RequestBody Runa runa) {
+    public ResponseEntity<RunaDTO> guardar(
+            @RequestBody RunaDTO runaDTO) {
 
-        Runa nuevaRuna = runaService.guardar(runa);
+        RunaDTO nuevaRuna = runaService.guardar(runaDTO);
 
         return new ResponseEntity<>(nuevaRuna,HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody Runa runaActualizada) 
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody RunaDTO runaActualizada) 
     {
         try 
         {

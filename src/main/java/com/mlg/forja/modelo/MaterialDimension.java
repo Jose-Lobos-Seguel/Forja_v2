@@ -21,8 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "material_dimension")
-public class MaterialDimension 
-{
+public class MaterialDimension {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del clan

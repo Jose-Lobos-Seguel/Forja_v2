@@ -14,14 +14,12 @@ import com.mlg.forja.modelo.Runa;
 import com.mlg.forja.repository.EnanoRepository;
 import com.mlg.forja.repository.EquipamientoRepository;
 import com.mlg.forja.repository.EquipamientoRunaRepository;
-import com.mlg.forja.repository.RunaRepository;
-
+import com.mlg.forja.repository.RunaRepository;import com.mlg.forja.repository.TipoRepository;
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class EquipamientoService 
-{
+public class EquipamientoService {
     @Autowired
     private EquipamientoRepository equipamientoRepository;
 
@@ -33,6 +31,9 @@ public class EquipamientoService
 
     @Autowired
     private EnanoRepository enanoRepository;
+
+    @Autowired
+    private TipoRepository tipoRepository;
 
     public List<EquipamientoDTO> obtenerTodos() {
         return equipamientoRepository.findAll()
@@ -47,9 +48,56 @@ public class EquipamientoService
         return convertirDTO(equipamiento);
     }
 
-    public Equipamiento guardar(Equipamiento equipo) 
+    public EquipamientoDTO guardar(EquipamientoDTO equipamientoDTO) 
     {
-        return equipamientoRepository.save(equipo);
+        if (equipamientoDTO.getForjadorId() == null) {
+            throw new RuntimeException("El equipamiento debe crearse con un enano forjador.");
+        }
+
+        Equipamiento equipamiento = new Equipamiento();
+        equipamiento.setNombre(equipamientoDTO.getNombre());
+        equipamiento.setCalidad(equipamientoDTO.getCalidad());
+        equipamiento.setMaxRunas(equipamientoDTO.getMaxRunas());
+
+        if (equipamientoDTO.getTipoId() != null) {
+            equipamiento.setTipo(tipoRepository.findById(equipamientoDTO.getTipoId())
+                    .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + equipamientoDTO.getTipoId())));
+        }
+
+        Enano forjador = enanoRepository.findById(equipamientoDTO.getForjadorId())
+                .orElseThrow(() -> new RuntimeException("No existe el enano con ID: " + equipamientoDTO.getForjadorId()));
+        equipamiento.setForjador(forjador);
+
+        return convertirDTO(equipamientoRepository.save(equipamiento));
+    }
+
+    public EquipamientoDTO updateEquipamiento(Integer id, EquipamientoDTO equipamientoDTO)
+    {
+        Equipamiento equipamiento = equipamientoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("No se pudo encontrar un equipamiento con el id " + id));
+
+        if(equipamientoDTO.getNombre() != null)
+        {
+            equipamiento.setNombre(equipamientoDTO.getNombre());
+        }
+        if(equipamientoDTO.getCalidad() != null)
+        {
+            equipamiento.setCalidad(equipamientoDTO.getCalidad());
+        }
+        if(equipamientoDTO.getMaxRunas() != null)
+        {
+            equipamiento.setMaxRunas(equipamientoDTO.getMaxRunas());
+        }
+        if(equipamientoDTO.getTipoId() != null)
+        {
+            equipamiento.setTipo(tipoRepository.findById(equipamientoDTO.getTipoId())
+                    .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + equipamientoDTO.getTipoId())));
+        }
+        if(equipamientoDTO.getForjadorId() != null)
+        {
+            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
+        }
+        return convertirDTO(equipamientoRepository.save(equipamiento));
     }
 
     public String eliminarMaterial(Integer id) 
@@ -98,7 +146,7 @@ public class EquipamientoService
         }
         if(equipamientoActualizado.getForjador() != null)
         {
-            equipamiento.setForjador(equipamientoActualizado.getForjador());
+            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
         }
 
         return equipamientoRepository.save(equipamiento);
@@ -134,6 +182,11 @@ public class EquipamientoService
 
         Enano enano = enanoRepository.findById(enanoId)
                 .orElseThrow(() -> new RuntimeException("El enano no existe."));
+
+        if (equipamiento.getForjador() != null)
+        {
+            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
+        }
 
         equipamiento.setForjador(enano);
 

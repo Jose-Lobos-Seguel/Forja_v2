@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.mlg.forja.modelo.EquipamientoRunaEntidad;
 
 @Repository
-public interface EquipamientoRunaRepository extends JpaRepository<EquipamientoRunaEntidad, Integer> 
-{
+public interface EquipamientoRunaRepository extends JpaRepository<EquipamientoRunaEntidad, Integer> {
 
 }

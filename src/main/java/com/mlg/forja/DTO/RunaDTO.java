@@ -5,10 +5,9 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class RunaDTO 
-{
+public class RunaDTO {
     private Integer id;
     private String nombre;
     private String elemento;
-    private List<EquipamientoRunaDTO> equipamiento;
+    private List<Integer> equipamientoIds;
 }

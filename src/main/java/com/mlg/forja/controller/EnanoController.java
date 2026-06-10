@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.EnanoDTO;
-import com.mlg.forja.modelo.Enano;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.service.EnanoService;
 
@@ -50,27 +50,6 @@ public class EnanoController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Enano> guardarEnano(@RequestBody Enano enano) 
-    {
-
-        Enano nuevoEnano =
-                enanoService.guardarEnano(enano);
-
-        return new ResponseEntity<>(
-                nuevoEnano,
-                HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarEnano(@PathVariable Integer id) 
-    {
-        String resultado =
-                enanoService.eliminarEnano(id);
-
-        return ResponseEntity.ok(resultado);
-    }
-
     @GetMapping("/nombre/{nombre}")
     public ResponseEntity<List<EnanoDTO>> buscarPorNombre(@PathVariable String nombre) 
     {
@@ -97,6 +76,7 @@ public class EnanoController {
                     .body(e.getMessage());
         }
     }
+
     @GetMapping("/{enanoId}/equipamientos")
     public ResponseEntity<?> obtenerEquipamientosForjados(@PathVariable Integer enanoId)
         {
@@ -113,5 +93,36 @@ public class EnanoController {
                 .badRequest()
                 .body(e.getMessage());
         }
+    }
+
+    @PostMapping
+    public ResponseEntity<EnanoDTO> guardarEnano(@RequestBody EnanoDTO enanoDTO) 
+    {
+
+        EnanoDTO nuevoEnano =
+                enanoService.guardarEnano(enanoDTO);
+
+        return new ResponseEntity<>(
+                nuevoEnano,
+                HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EnanoDTO> actualizarEnano(@PathVariable Integer id, @RequestBody EnanoDTO enanoDTO) {
+        try {
+            EnanoDTO actualizado = enanoService.actualizarEnano(id, enanoDTO);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminarEnano(@PathVariable Integer id) 
+    {
+        String resultado =
+                enanoService.eliminarEnano(id);
+
+        return ResponseEntity.ok(resultado);
     }
 }

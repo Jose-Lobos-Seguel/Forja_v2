@@ -24,8 +24,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "material")
-public class Material 
-{
+public class Material {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del material

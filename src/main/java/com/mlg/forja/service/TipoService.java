@@ -4,9 +4,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.mlg.forja.modelo.Tipo;
-import com.mlg.forja.DTO.ClanDTO;
 import com.mlg.forja.DTO.TipoDTO;
-import com.mlg.forja.modelo.Clan;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.repository.TipoRepository;
 import jakarta.transaction.Transactional;
@@ -30,17 +28,6 @@ public class TipoService {
         return convertirDTO(tipo);
     }
 
-    public TipoDTO actualizar(Integer id, Tipo tipoActualizado) {
-        Clan clan = tipoRepository.findById(id)
-        .orElseThrow(()
-        -> new RuntimeException("No existe el Clan con ID: " + id));
-                    
-    clan.setNombre(clanActualizado.getNombre());
-
-    clanRepository.save(clan);
-    return convertirDTO(clan);
-    }
-
     public String eliminarTipo(Integer id) {
         try {
            Tipo tipo = tipoRepository.findById(id)
@@ -52,8 +39,20 @@ public class TipoService {
         }
     }
 
-    public Tipo guardarTipo(Tipo tipo) {
-       return tipoRepository.save(tipo);
+    public TipoDTO guardarTipo(TipoDTO tipoDTO) {
+        Tipo tipo = new Tipo();
+        tipo.setNombre(tipoDTO.getNombre());
+        return convertirDTO(tipoRepository.save(tipo));
+    }
+
+    public TipoDTO actualizarTipo(Integer id, TipoDTO tipoDTO) {
+        Tipo tipo = tipoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + id));
+
+        if (tipoDTO.getNombre() != null) {
+            tipo.setNombre(tipoDTO.getNombre());
+        }
+        return convertirDTO(tipoRepository.save(tipo));
     }
 
     public List<Tipo> buscarPorNombre(String nombre){

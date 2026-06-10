@@ -19,8 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "region")
-public class Region 
-{
+public class Region {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador de la region

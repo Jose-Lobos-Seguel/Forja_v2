@@ -16,8 +16,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class EnanoService 
-{
+public class EnanoService {
     @Autowired
     private EnanoRepository enanoRepository;
 
@@ -50,6 +49,11 @@ public class EnanoService
            Enano enano = enanoRepository.findById(id)
                    .orElseThrow(() -> new RuntimeException("Seria imposible mandar al enano con ID de " + id + " al abismo pues este no existe."));
 
+           if (enano.getEquipamientosForjados() != null && !enano.getEquipamientosForjados().isEmpty()) {
+               enano.getEquipamientosForjados().forEach(e -> e.setForjador(null));
+               equipamientoRepository.saveAll(enano.getEquipamientosForjados());
+           }
+
            enanoRepository.delete(enano);
 
            return "El enano '" + enano.getNombre() + enano.getTitulo() + enano.getApellido() + "' ha sido enviado al abismo con exito.";
@@ -60,9 +64,47 @@ public class EnanoService
         }
     }
 
-    public Enano guardarEnano(Enano enano) {
+    public EnanoDTO guardarEnano(EnanoDTO enanoDTO) {
+        Enano enano = new Enano();
+        enano.setNombre(enanoDTO.getNombre());
+        enano.setApellido(enanoDTO.getApellido());
+        enano.setTitulo(enanoDTO.getTitulo());
+        enano.setEspecialidad(enanoDTO.getEspecialidad());
 
-       return enanoRepository.save(enano);
+        if (enanoDTO.getClanId() != null) {
+            Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                    .orElseThrow(() -> new RuntimeException("No existe el clan con ID: " + enanoDTO.getClanId()));
+            enano.setClan(clan);
+        }
+
+        Enano saved = enanoRepository.save(enano);
+        return convertirDTO(saved);
+    }
+
+    public EnanoDTO actualizarEnano(Integer id, EnanoDTO enanoDTO) {
+        Enano enano = enanoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No existe el enano con ID: " + id));
+
+        if (enanoDTO.getNombre() != null) {
+            enano.setNombre(enanoDTO.getNombre());
+        }
+        if (enanoDTO.getApellido() != null) {
+            enano.setApellido(enanoDTO.getApellido());
+        }
+        if (enanoDTO.getTitulo() != null) {
+            enano.setTitulo(enanoDTO.getTitulo());
+        }
+        if (enanoDTO.getEspecialidad() != null) {
+            enano.setEspecialidad(enanoDTO.getEspecialidad());
+        }
+        if (enanoDTO.getClanId() != null) {
+            Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                    .orElseThrow(() -> new RuntimeException("No existe el clan con ID: " + enanoDTO.getClanId()));
+            enano.setClan(clan);
+        }
+
+        Enano updated = enanoRepository.save(enano);
+        return convertirDTO(updated);
     }
 
     public List<EnanoDTO> buscarPorNombre(String nombre){

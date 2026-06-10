@@ -16,13 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.EquipamientoDTO;
-import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.service.EquipamientoService;
 
 @RestController
 @RequestMapping("/forja/api/v1/equipamientos")
-public class EquipamientoController 
-{
+public class EquipamientoController {
 
     @Autowired
     private EquipamientoService equipamientoService;
@@ -53,35 +51,13 @@ public class EquipamientoController
     }
 
     @PostMapping
-    public ResponseEntity<Equipamiento> guardar(@RequestBody Equipamiento equipamiento)
+    public ResponseEntity<?> guardar(@RequestBody EquipamientoDTO equipamientoDTO)
     {
-        Equipamiento nuevoEquipamiento = equipamientoService.guardar(equipamiento);
-
-        return new ResponseEntity<>(nuevoEquipamiento,HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable Integer id) 
-    {
-
-        String resultado = equipamientoService.eliminarMaterial(id);
-        return ResponseEntity.ok(resultado);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody Equipamiento equipamientoActualizado) 
-    {
-        try 
-        {
-            Equipamiento actualizado = equipamientoService.updateEquipamiento(id,equipamientoActualizado);
-            return ResponseEntity.ok(actualizado);
-
-        }
-        catch (RuntimeException e)
-        {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
+        try {
+            EquipamientoDTO nuevoEquipamiento = equipamientoService.guardar(equipamientoDTO);
+            return new ResponseEntity<>(nuevoEquipamiento,HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -100,5 +76,30 @@ public class EquipamientoController
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody EquipamientoDTO equipamientoActualizado) 
+    {
+        try 
+        {
+            EquipamientoDTO actualizado = equipamientoService.updateEquipamiento(id,equipamientoActualizado);
+            return ResponseEntity.ok(actualizado);
+
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminar(@PathVariable Integer id) 
+    {
+
+        String resultado = equipamientoService.eliminarMaterial(id);
+        return ResponseEntity.ok(resultado);
     }
 }

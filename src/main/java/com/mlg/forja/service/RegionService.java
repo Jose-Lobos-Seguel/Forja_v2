@@ -49,9 +49,24 @@ public class RegionService {
         }
     }
 
-    public Region guardarRegion(Region region) {
+    public RegionDTO guardarRegion(RegionDTO regionDTO) {
+        Region region = new Region();
+        region.setNombre(regionDTO.getNombre());
+        region.setDescripcion(regionDTO.getDescripcion());
+        return convertirDTO(regionRepository.save(region));
+    }
 
-       return regionRepository.save(region);
+    public RegionDTO actualizarRegion(Integer id, RegionDTO regionDTO) {
+        Region region = regionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No existe la region con ID: " + id));
+
+        if (regionDTO.getNombre() != null) {
+            region.setNombre(regionDTO.getNombre());
+        }
+        if (regionDTO.getDescripcion() != null) {
+            region.setDescripcion(regionDTO.getDescripcion());
+        }
+        return convertirDTO(regionRepository.save(region));
     }
 
     public List<RegionDTO> buscarPorNombre(String nombre){

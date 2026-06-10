@@ -21,8 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "dimension") 
-public class Dimension 
-{
+public class Dimension {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador de la dimension
