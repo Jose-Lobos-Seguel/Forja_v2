@@ -65,7 +65,7 @@ public class TipoService {
                 .map(Equipamiento::getId)
                 .toList();
 
-            dto.setEquipamientoIds(tiposIds);
+            //dto.setEquipamientoIds(tiposIds);
         }
         return dto;
     }

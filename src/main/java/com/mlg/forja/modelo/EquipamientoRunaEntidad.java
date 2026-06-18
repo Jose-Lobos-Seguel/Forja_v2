@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +30,6 @@ public class EquipamientoRunaEntidad
     @Column(nullable = true, length = 25)
     @Size(min = 3, max = 25, message = "El elemento debe contener entre 3 y 50 caracteres")
     @NotBlank
-    @NotNull
     //Bonus de la runa
     //Puede ser NULL
     //NULL indica que la runa no añade un bonus
