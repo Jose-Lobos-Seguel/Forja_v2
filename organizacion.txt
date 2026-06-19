@@ -1,16 +1,9 @@
 TAREASSSS 
 
-1 - Arreglar id de enano / modificado y esperando revision
-2 - refactorizar metodo actualizar runa, actualizar mostrando solo el id del equipamiento no su json completo / esperando revision
-3 - refactorizar logica de modo que si un enano es borrado aun asi se muestre como forjador de los equipamientos que haya forjado / esperando revision
-4 - refactorizar logica de relacion entre enano y equipamiento no se puede modificar forjador posterior a la creacion del equipamiento / esperando revision
-    para crear un equipamiento DEBE existir un enano previo que se le asignara como forjador / esperando revision
-5 - ORDENAR METODOS EN EL CONTROLER por Get, post, put, delete / COMPLETADO
-6 - refactorizar los put deben devolver DTO / completado
-7 - Organizar un script sql para testeo de HTTPs (los tepes)/COMPLETADO
-8 - eliminar metodos https redudantes / esperando respuesta
-
-
-
-
-LINK SWAGGER POR SI ACASO "http://localhost:8080/doc/swagger-ui/index.html#/"
+1 - Arreglar id de enano / en proceso
+2 - refactorizar metodo actualizar runa, actualizar mostrando solo el id del equipamiento no su json completo / en proceso
+3 - refactorizar logica de modo que si un enano es borrado aun asi se muestre como forjador de los equipamientos que haya forjado / en proceso
+4 - refactorizar logica de relacion entre enano y equipamiento no se puede modificar forjador posterior a la creacion del equipamiento
+    para crear un equipamiento DEBE existir un enano previo que se le asignara como forjador / en proceso
+5 - ORDENAR METODOS EN EL CONTROLER por Get, post, put, delete / en proceso
+6 - refactorizar los put deben devolver DTO / en proceso
