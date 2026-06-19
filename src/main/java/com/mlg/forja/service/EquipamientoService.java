@@ -1,25 +1,32 @@
 package com.mlg.forja.service;
 
+import com.mlg.forja.repository.MaterialRepository;
+import com.mlg.forja.repository.RegionRepository;
+import com.mlg.forja.repository.TipoRepository;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mlg.forja.DTO.EquipamientoDTO;
-import com.mlg.forja.modelo.Enano;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.modelo.EquipamientoRunaEntidad;
-import com.mlg.forja.modelo.Material;
+import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.modelo.Runa;
 import com.mlg.forja.repository.EnanoRepository;
 import com.mlg.forja.repository.EquipamientoRepository;
 import com.mlg.forja.repository.EquipamientoRunaRepository;
-import com.mlg.forja.repository.RunaRepository;import com.mlg.forja.repository.TipoRepository;
+import com.mlg.forja.repository.MaterialDimensionRepository;
+import com.mlg.forja.repository.RunaRepository;
+
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class EquipamientoService {
+public class EquipamientoService 
+{
     @Autowired
     private EquipamientoRepository equipamientoRepository;
 
@@ -33,9 +40,12 @@ public class EquipamientoService {
     private EnanoRepository enanoRepository;
 
     @Autowired
+    private MaterialDimensionRepository materialDimensionRepository;
+
+    @Autowired
     private TipoRepository tipoRepository;
 
-    public List<EquipamientoDTO> obtenerTodos() {
+    public List<EquipamientoDTO> listar() {
         return equipamientoRepository.findAll()
             .stream()
             .map(this::convertirDTO)
@@ -48,64 +58,18 @@ public class EquipamientoService {
         return convertirDTO(equipamiento);
     }
 
-    public EquipamientoDTO guardar(EquipamientoDTO equipamientoDTO) 
-    {
-        if (equipamientoDTO.getForjadorId() == null) {
-            throw new RuntimeException("El equipamiento debe crearse con un enano forjador.");
-        }
-
-        Equipamiento equipamiento = new Equipamiento();
-        equipamiento.setNombre(equipamientoDTO.getNombre());
-        equipamiento.setCalidad(equipamientoDTO.getCalidad());
-        equipamiento.setMaxRunas(equipamientoDTO.getMaxRunas());
-
-        if (equipamientoDTO.getTipoId() != null) {
-            equipamiento.setTipo(tipoRepository.findById(equipamientoDTO.getTipoId())
-                    .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + equipamientoDTO.getTipoId())));
-        }
-
-        Enano forjador = enanoRepository.findById(equipamientoDTO.getForjadorId())
-                .orElseThrow(() -> new RuntimeException("No existe el enano con ID: " + equipamientoDTO.getForjadorId()));
-        equipamiento.setForjador(forjador);
-
-        return convertirDTO(equipamientoRepository.save(equipamiento));
+    public EquipamientoDTO guardar(EquipamientoDTO dto) {
+        Equipamiento equipo = convertirEntidad(dto);
+        equipamientoRepository.save(equipo);
+        return dto;
     }
 
-    public EquipamientoDTO updateEquipamiento(Integer id, EquipamientoDTO equipamientoDTO)
-    {
-        Equipamiento equipamiento = equipamientoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("No se pudo encontrar un equipamiento con el id " + id));
-
-        if(equipamientoDTO.getNombre() != null)
-        {
-            equipamiento.setNombre(equipamientoDTO.getNombre());
-        }
-        if(equipamientoDTO.getCalidad() != null)
-        {
-            equipamiento.setCalidad(equipamientoDTO.getCalidad());
-        }
-        if(equipamientoDTO.getMaxRunas() != null)
-        {
-            equipamiento.setMaxRunas(equipamientoDTO.getMaxRunas());
-        }
-        if(equipamientoDTO.getTipoId() != null)
-        {
-            equipamiento.setTipo(tipoRepository.findById(equipamientoDTO.getTipoId())
-                    .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + equipamientoDTO.getTipoId())));
-        }
-        if(equipamientoDTO.getForjadorId() != null)
-        {
-            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
-        }
-        return convertirDTO(equipamientoRepository.save(equipamiento));
-    }
-
-    public String eliminarMaterial(Integer id) 
+    public String eliminar(Integer id) 
     {
         try 
         {
             Equipamiento equipamiento = equipamientoRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("La dimension con ID " + id + " no existe."));
+                    .orElseThrow(() -> new RuntimeException("El equipamiento con el id " + id + " no existe."));
             equipamientoRepository.delete(equipamiento);
             return "El equipamiento " + equipamiento.getNombre() + " a sido removido del arsenal.";
         }
@@ -115,18 +79,15 @@ public class EquipamientoService {
         }
     }
 
-    public Equipamiento updateEquipamiento(Integer id, Equipamiento equipamientoActualizado)
-    {
+    public EquipamientoDTO actualizar(Integer id, EquipamientoDTO equipamientoDTO) {
         Equipamiento equipamiento = equipamientoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("No se pudo encontrar un equipamiento con el id " + id));
-
+        
+        Equipamiento equipamientoActualizado = convertirEntidad(equipamientoDTO);
+        
         if(equipamientoActualizado.getNombre() != null)
         {
             equipamiento.setNombre(equipamientoActualizado.getNombre());
-        }
-        if(equipamientoActualizado.getCalidad() != null)
-        {
-            equipamiento.setCalidad(equipamientoActualizado.getCalidad());
         }
         if(equipamientoActualizado.getMaxRunas() != null)
         {
@@ -143,17 +104,13 @@ public class EquipamientoService {
         if(equipamientoActualizado.getMateriales() != null)
         {
             equipamiento.setMateriales(equipamientoActualizado.getMateriales());
+            equipamiento.setCalidad(calculoCalidad(equipamientoActualizado.getMateriales()));
         }
-        if(equipamientoActualizado.getForjador() != null)
-        {
-            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
-        }
-
-        return equipamientoRepository.save(equipamiento);
+        equipamientoRepository.save(equipamiento);
+        return convertirDTO(equipamiento);
     }
 
     public String colocarRuna(Integer equipamientoId, Integer runaId, String bonus) {
-
         Equipamiento equipo = equipamientoRepository.findById(equipamientoId)
                 .orElseThrow(() -> new RuntimeException("El equipamiento no existe."));
         
@@ -171,85 +128,116 @@ public class EquipamientoService {
         relacion.setBonus(bonus);
 
         equipamientoRunaRepository.save(relacion);
-        
         return "Runa colocada con éxito.";
     }
 
-    public String asignarForjador(Integer equipamientoId, Integer enanoId)
-    {
-        Equipamiento equipamiento = equipamientoRepository.findById(equipamientoId)
-                .orElseThrow(() -> new RuntimeException("El equipamiento no existe."));
-
-        Enano enano = enanoRepository.findById(enanoId)
-                .orElseThrow(() -> new RuntimeException("El enano no existe."));
-
-        if (equipamiento.getForjador() != null)
-        {
-            throw new RuntimeException("No se puede cambiar el forjador de un equipamiento una vez asignado.");
-        }
-
-        equipamiento.setForjador(enano);
-
-        equipamientoRepository.save(equipamiento);
-
-        return "El equipamiento '" + equipamiento.getNombre() + "' fue forjado por " + enano.getNombre() + ".";
-    }
-
-    public String removerForjador(Integer equipamientoId)
-    {
-        Equipamiento equipamiento = equipamientoRepository.findById(equipamientoId)
-                .orElseThrow(() -> new RuntimeException("El equipamiento no existe."));
-
-        equipamiento.setForjador(null);
-
-        equipamientoRepository.save(equipamiento);
-
-        return "El equipamiento '" + equipamiento.getNombre() + "' ya no posee un forjador asignado.";
-    }
-
-    public EquipamientoDTO convertirDTO(Equipamiento equipamiento) 
-    {
-
+    public EquipamientoDTO convertirDTO(Equipamiento equipamiento) {
         EquipamientoDTO dto = new EquipamientoDTO();
 
         dto.setId(equipamiento.getId());
         dto.setNombre(equipamiento.getNombre());
-        dto.setCalidad(equipamiento.getCalidad());
         dto.setMaxRunas(equipamiento.getMaxRunas());
 
-        if (equipamiento.getTipo() != null) 
+        if (equipamiento.getTipo() != null)
         {
-
             dto.setTipoId(equipamiento.getTipo().getId());
             dto.setTipoNombre(equipamiento.getTipo().getNombre());
         }
-
         if(equipamiento.getForjador() != null)
         {
             dto.setForjadorId(equipamiento.getForjador().getId());
             dto.setForjadorNombre(equipamiento.getForjador().getNombre());
         }
-
-        if (equipamiento.getMateriales() != null) 
+        if (equipamiento.getMateriales() != null)
         {
-
             List<Integer> materialesIds = equipamiento.getMateriales().stream()
-                .map(Material::getId)
+                .map(MaterialDimension::getId)
                 .toList();
 
             dto.setMaterialesIds(materialesIds);
         }
-        
         if (equipamiento.getRunas() != null) 
         {
-
             List<Integer> runasIds = equipamiento.getRunas().stream()
                 .map(EquipamientoRunaEntidad::getId)
                 .toList();
 
             dto.setRunasIds(runasIds);
         }
-
         return dto;
+    }
+
+    public Equipamiento convertirEntidad(EquipamientoDTO dto) {
+        Equipamiento entidad = new Equipamiento();
+
+        entidad.setNombre(dto.getNombre());
+        entidad.setMaxRunas(dto.getMaxRunas());
+
+        entidad.setCalidad(calculoCalidad(materialDimensionRepository.findAllById(dto.getMaterialesIds())));
+
+        if (dto.getTipoId() != null)
+        {
+            entidad.setTipo(tipoRepository.findById(dto.getTipoId())
+                .orElseThrow(() -> new RuntimeException("Tipo no encontrado")));
+        }
+        if (dto.getMaterialesIds() != null)
+        {
+            entidad.setMateriales(materialDimensionRepository.findAllById(dto.getMaterialesIds()));
+        }
+        if (dto.getRunasIds() != null && dto.getRunasIds().size() <= dto.getMaxRunas())
+        {
+            List<EquipamientoRunaEntidad> listaRunas = new ArrayList<>();
+
+            for (Integer runaId : dto.getRunasIds() ) {
+                Runa runa = runaRepository.findById(runaId)
+                    .orElseThrow(() -> new RuntimeException("No se pudo encontrar la runa"));
+
+                EquipamientoRunaEntidad equipamientoRuna = equipamientoRunaRepository.findByRuna(runa)
+                    .orElseThrow(() -> new RuntimeException("No se pudo encontrar la relacion relacionada con la runa"));
+                
+                listaRunas.add(equipamientoRuna);    
+            }
+            entidad.setRunas(listaRunas);
+        }
+        if (dto.getForjadorId() != null)
+        {
+            entidad.setForjador(enanoRepository.findById(dto.getForjadorId())
+                .orElseThrow(() -> new RuntimeException("No se pudo encontrar al forjador")));
+        }
+        return entidad;
+    };
+
+    public String calculoCalidad(List<MaterialDimension> materiales) {
+        Integer purezaMaxima = materiales.size() * 5;
+        Integer purezaTotal = 0;
+        for (MaterialDimension material : materiales) {
+            purezaTotal += material.getPureza();
+        }
+
+        if(purezaTotal == purezaMaxima)
+        {
+            return "Legendario";
+        }
+        if(purezaTotal <= purezaMaxima - (purezaMaxima / 5))
+        {
+            return "Epico";
+        }
+        if(purezaTotal <= purezaMaxima - (purezaMaxima / 5)*2)
+        {
+            return "Raro";
+        }
+        if(purezaTotal <= purezaMaxima - (purezaMaxima / 5)*3)
+        {
+            return "Poco comun";
+        }
+        if(purezaTotal <= purezaMaxima - (purezaMaxima / 5)*4)
+        {
+            return "Comun";
+        }
+        if(purezaTotal == 0)
+        {
+            return "Improvisado";
+        }
+        return null;
     }
 }

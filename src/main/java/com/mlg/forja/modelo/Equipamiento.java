@@ -26,7 +26,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "equipamiento")
-public class Equipamiento {
+public class Equipamiento 
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del arma
@@ -63,7 +64,7 @@ public class Equipamiento {
 
     @OneToMany(mappedBy = "equipamiento")
     //Indica los materiales del cual esta compuesto el equipamiento
-    private List<Material> materiales;
+    private List<MaterialDimension> materiales;
 
     @OneToMany(mappedBy = "equipamiento")
     //Indica las runas que estan inbuidas en el equipamiento

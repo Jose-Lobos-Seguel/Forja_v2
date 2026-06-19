@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "material_dimension")
-public class MaterialDimension {
+public class MaterialDimension 
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del clan
@@ -34,6 +35,13 @@ public class MaterialDimension {
     //Indica la pureza o calidad del material
     //se utilizara en la logica para calcular la calidad del arma
     private Integer pureza;
+
+    @ManyToOne
+    @JoinColumn(name = "equipamiento_id")
+    //Relaciona material con equipamiento por equipamiento_id
+    //indica que un equipamiento x esta compuesto por x,y,z materiales
+    //la lista para almacenar los materiales se instancia en la clase equipamiento
+    private Equipamiento equipamiento;
 
     @ManyToOne
     @JoinColumn(name = "material_id")

@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository;
 import com.mlg.forja.modelo.Clan;
 
 @Repository
-public interface ClanRepository extends JpaRepository<Clan,Integer> {
+public interface ClanRepository extends JpaRepository<Clan,Integer> 
+{
     List<Clan> findByNombre(String nombre);
 
 }

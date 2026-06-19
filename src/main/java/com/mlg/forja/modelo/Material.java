@@ -7,8 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +22,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "material")
-public class Material {
+public class Material 
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del material
@@ -36,13 +35,6 @@ public class Material {
     @NotNull
     //Nombre del material
     private String nombre;
-
-    @ManyToOne
-    @JoinColumn(name = "equipamiento_id")
-    //Relaciona material con equipamiento por equipamiento_id
-    //indica que un equipamiento x esta compuesto por x,y,z materiales
-    //la lista para almacenar los materiales se instancia en la clase equipamiento
-    private Equipamiento equipamiento;
 
     @OneToMany(mappedBy = "material")
     //Relacion con la tabla MaterialDimension

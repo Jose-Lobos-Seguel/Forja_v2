@@ -5,7 +5,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ClanDTO {
+public class ClanDTO 
+{
     private Integer id;
     private String nombre;
     //Relacion con otras clases

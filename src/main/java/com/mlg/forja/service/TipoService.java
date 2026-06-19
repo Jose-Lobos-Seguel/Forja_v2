@@ -40,27 +40,37 @@ public class TipoService {
     }
 
     public TipoDTO guardarTipo(TipoDTO tipoDTO) {
-        Tipo tipo = new Tipo();
-        tipo.setNombre(tipoDTO.getNombre());
-        return convertirDTO(tipoRepository.save(tipo));
+       Tipo tipo = convertirEntidad(tipoDTO);
+       tipoRepository.save(tipo);
+       return tipoDTO;
     }
 
     public TipoDTO actualizarTipo(Integer id, TipoDTO tipoDTO) {
-        Tipo tipo = tipoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No existe el tipo con ID: " + id));
-
-        if (tipoDTO.getNombre() != null) {
-            tipo.setNombre(tipoDTO.getNombre());
-        }
-        return convertirDTO(tipoRepository.save(tipo));
+       Tipo tipo = tipoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("El tipo de equipamiento que intenta actualizar no existe"));
+       if(tipoDTO.getNombre() != null) {
+           tipo.setNombre(tipoDTO.getNombre());
+       }
+       tipoRepository.save(tipo);
+       return convertirDTO(tipo);
     }
 
-    public List<Tipo> buscarPorNombre(String nombre){
-       return tipoRepository.findByNombre(nombre);
+    public List<TipoDTO> buscarPorNombre(String nombre){
+       return tipoRepository.findByNombre(nombre)
+               .stream()
+               .map(this::convertirDTO)
+               .toList();
     }
 
     public List<Tipo> buscarPorEquipamiento(Equipamiento equipamiento_id){
         return buscarPorEquipamiento(equipamiento_id);
+    }
+
+    private Tipo convertirEntidad(TipoDTO dto) {
+        Tipo tipo = new Tipo();
+        tipo.setId(dto.getId());
+        tipo.setNombre(dto.getNombre());
+        return tipo;
     }
 
     public TipoDTO convertirDTO(Tipo tipo)
@@ -77,7 +87,7 @@ public class TipoService {
                 .map(Equipamiento::getId)
                 .toList();
 
-            dto.setEquipamientoIds(tiposIds);
+            //dto.setEquipamientoIds(tiposIds);
         }
         return dto;
     }

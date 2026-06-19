@@ -21,7 +21,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "clan")
-public class Clan {
+public class Clan
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del clan

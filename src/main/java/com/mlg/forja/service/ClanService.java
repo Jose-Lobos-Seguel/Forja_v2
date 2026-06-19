@@ -57,22 +57,22 @@ public class ClanService {
     }
     
     public ClanDTO guardarClan(ClanDTO clanDTO) {
-        Clan clan = new Clan();
-        clan.setNombre(clanDTO.getNombre());
-        Clan saved = clanRepository.save(clan);
-        return convertirDTO(saved);
+
+       Clan clan = convertirEntidad(clanDTO);
+       clanRepository.save(clan);
+       return clanDTO;
     }
 
     public ClanDTO actualizarClan(Integer id, ClanDTO clanDTO) {
-        Clan clan = clanRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No existe el clan con ID: " + id));
 
-        if (clanDTO.getNombre() != null) {
-            clan.setNombre(clanDTO.getNombre());
-        }
+       Clan clan = clanRepository.findById(id)
+             .orElseThrow(() -> new RuntimeException("El clan de enanos que intenta actualizar no existe"));
 
-        Clan updated = clanRepository.save(clan);
-        return convertirDTO(updated);
+       if(clanDTO.getNombre() != null) {
+           clan.setNombre(clanDTO.getNombre());
+       }
+       clanRepository.save(clan);
+       return convertirDTO(clan);
     }
 
     public List<ClanDTO> buscarPorNombre(String nombre){
@@ -93,6 +93,13 @@ public class ClanService {
             .map(this::convertirEnanoDTO)
             .toList();
     }
+    private Clan convertirEntidad(ClanDTO dto) {
+        Clan clan = new Clan();
+        clan.setId(dto.getId());
+        clan.setNombre(dto.getNombre());
+        return clan;
+    }
+
     public ClanDTO convertirDTO(Clan clan)
     {
         ClanDTO dto = new ClanDTO();
@@ -100,14 +107,9 @@ public class ClanService {
         dto.setId(clan.getId());
         dto.setNombre(clan.getNombre());
 
-        List<Enano> enanos = clan.getEnanos();
-        if (enanos == null || enanos.isEmpty()) {
-            enanos = enanoRepository.findByClan(clan);
-        }
-
-        if (enanos != null && !enanos.isEmpty())
+        if(clan.getEnanos() != null)
         {
-            List<Integer> enanosIds = enanos
+            List<Integer> enanosIds = clan.getEnanos()
                     .stream()
                     .map(Enano::getId)
                     .toList();

@@ -20,16 +20,16 @@ import com.mlg.forja.service.MaterialService;
 @RestController
 @RequestMapping("/forja/api/v1/materiales")
 public class MaterialController {
+
     @Autowired
     private MaterialService materialService;
 
     @GetMapping
-    public ResponseEntity<List<MaterialDTO>> obtenerTodas() {
-        List<MaterialDTO> materials = materialService.obtenerTodos();
-        if (materials.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(materials, HttpStatus.OK);
+    public ResponseEntity<List<MaterialDTO>> obtenerTodos() 
+    {
+        List<MaterialDTO> materiales = materialService.listar();
+
+        return ResponseEntity.ok(materiales);
     }
 
     @GetMapping("/{id}")
@@ -43,45 +43,35 @@ public class MaterialController {
     }
 
     @PostMapping
-    public ResponseEntity<MaterialDTO> crearMaterial(@RequestBody MaterialDTO materialDTO) {
-        MaterialDTO materialGuardado = materialService.guardar(materialDTO);
-        return new ResponseEntity<>(materialGuardado, HttpStatus.CREATED);
+    public ResponseEntity<MaterialDTO> guardar(@RequestBody MaterialDTO dto) {
+        MaterialDTO nuevoMaterial = materialService.guardar(dto);
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(nuevoMaterial);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MaterialDTO> actualizarMaterial(@PathVariable Integer id, @RequestBody MaterialDTO materialDTO) {
-        try {
-            MaterialDTO actualizado = materialService.actualizarMaterial(id, materialDTO);
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody MaterialDTO dto) 
+    {
+        try 
+        {
+            MaterialDTO actualizado = materialService.actualizar(id, dto);
             return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
 
-    @PutMapping("/{materialId}/dimension/{dimensionId}")
-    public ResponseEntity<String> asignarDimension(@PathVariable Integer materialId, @PathVariable Integer dimensionId) {
-        try {
-            String resultado = materialService.añadirDimensionAMaterial(materialId, dimensionId);
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
-    }
-
-    @DeleteMapping("/{materialId}/dimension/{dimensionId}")
-    public ResponseEntity<String> desasignarDimension(@PathVariable Integer materialId, @PathVariable Integer dimensionId) {
-        try {
-            String resultado = materialService.desasignarMaterialDeDimension(materialId, dimensionId);
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminarMaterial(@PathVariable Integer id) {
         try {
-            String resultado = materialService.eliminarMaterial(id);
+            String resultado = materialService.eliminar(id);
             return new ResponseEntity<>(resultado, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

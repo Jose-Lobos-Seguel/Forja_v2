@@ -49,15 +49,6 @@ public class RegionController {
         }
     }
 
-    @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<List<RegionDTO>> buscarPorNombre( @PathVariable String nombre) 
-    {
-        List<RegionDTO> regiones =
-                regionService.buscarPorNombre(nombre);
-
-        return ResponseEntity.ok(regiones);
-    }
-
     @PostMapping
     public ResponseEntity<RegionDTO> guardarRegion(@RequestBody RegionDTO regionDTO) 
     {
@@ -68,12 +59,18 @@ public class RegionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RegionDTO> actualizarRegion(@PathVariable Integer id, @RequestBody RegionDTO regionDTO) {
-        try {
+    public ResponseEntity<?> actualizarRegion(@PathVariable Integer id, @RequestBody RegionDTO regionDTO) 
+    {
+        try 
+        {
             RegionDTO actualizado = regionService.actualizarRegion(id, regionDTO);
             return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 
@@ -82,5 +79,14 @@ public class RegionController {
     {
         String resultado = regionService.eliminarRegion(id);
         return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/nombre/{nombre}")
+    public ResponseEntity<List<RegionDTO>> buscarPorNombre( @PathVariable String nombre) 
+    {
+        List<RegionDTO> regiones =
+                regionService.buscarPorNombre(nombre);
+
+        return ResponseEntity.ok(regiones);
     }
 }

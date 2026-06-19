@@ -61,11 +61,11 @@ public class RunaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody RunaDTO runaActualizada) 
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody RunaDTO runaDTO) 
     {
         try 
         {
-            RunaDTO runa = runaService.actualizar(id,runaActualizada);
+            RunaDTO runa = runaService.actualizar(id,runaDTO);
 
             return ResponseEntity.ok(runa);
 

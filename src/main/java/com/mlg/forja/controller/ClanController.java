@@ -35,7 +35,8 @@ public class ClanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) 
+    {
         try 
         {
             ClanDTO clan = clanService.buscarPorId(id);
@@ -47,6 +48,38 @@ public class ClanController {
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
         }
+    }
+
+    @PostMapping
+    public ResponseEntity<ClanDTO> guardarClan(@RequestBody ClanDTO clanDTO) 
+    {
+        ClanDTO nuevoClan = clanService.guardarClan(clanDTO);
+
+        return new ResponseEntity<>(nuevoClan, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarClan(@PathVariable Integer id, @RequestBody ClanDTO clanDTO) 
+    {
+        try 
+        {
+            ClanDTO actualizado = clanService.actualizarClan(id, clanDTO);
+            return ResponseEntity.ok(actualizado);
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminarClan(@PathVariable Integer id) 
+    {
+        String resultado = clanService.eliminarClan(id);
+
+        return ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/nombre/{nombre}")
@@ -63,30 +96,5 @@ public class ClanController {
         List<EnanoDTO> miembros = clanService.buscarMiembros(id);
 
         return ResponseEntity.ok(miembros);
-    }
-
-    @PostMapping
-    public ResponseEntity<ClanDTO> guardarClan(@RequestBody ClanDTO clanDTO) 
-    {
-        ClanDTO nuevoClan = clanService.guardarClan(clanDTO);
-        return new ResponseEntity<>(nuevoClan, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ClanDTO> actualizarClan(@PathVariable Integer id, @RequestBody ClanDTO clanDTO) {
-        try {
-            ClanDTO actualizado = clanService.actualizarClan(id, clanDTO);
-            return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarClan(@PathVariable Integer id) 
-    {
-        String resultado = clanService.eliminarClan(id);
-
-        return ResponseEntity.ok(resultado);
     }
 }

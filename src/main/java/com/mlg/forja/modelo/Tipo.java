@@ -22,7 +22,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tipo")
-public class Tipo {
+public class Tipo 
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador del tipo

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.mlg.forja.modelo.Equipamiento;
 
 @Repository
-public interface EquipamientoRepository extends JpaRepository<Equipamiento,Integer> {
+public interface EquipamientoRepository extends JpaRepository<Equipamiento,Integer>
+{
     Optional<Equipamiento> findByNombre(String nombre);
 }

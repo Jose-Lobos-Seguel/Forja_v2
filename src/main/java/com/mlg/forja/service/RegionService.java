@@ -50,23 +50,22 @@ public class RegionService {
     }
 
     public RegionDTO guardarRegion(RegionDTO regionDTO) {
-        Region region = new Region();
-        region.setNombre(regionDTO.getNombre());
-        region.setDescripcion(regionDTO.getDescripcion());
-        return convertirDTO(regionRepository.save(region));
+
+       Region region = convertirEntidad(regionDTO);
+       regionRepository.save(region);
+       return regionDTO;
     }
 
     public RegionDTO actualizarRegion(Integer id, RegionDTO regionDTO) {
-        Region region = regionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No existe la region con ID: " + id));
 
-        if (regionDTO.getNombre() != null) {
-            region.setNombre(regionDTO.getNombre());
-        }
-        if (regionDTO.getDescripcion() != null) {
-            region.setDescripcion(regionDTO.getDescripcion());
-        }
-        return convertirDTO(regionRepository.save(region));
+       Region region = regionRepository.findById(id)
+             .orElseThrow(() -> new RuntimeException("La region que intenta actualizar no existe"));
+
+       if(regionDTO.getNombre() != null) {
+           region.setNombre(regionDTO.getNombre());
+       }
+       regionRepository.save(region);
+       return convertirDTO(region);
     }
 
     public List<RegionDTO> buscarPorNombre(String nombre){
@@ -75,6 +74,13 @@ public class RegionService {
                .stream()
                .map(this::convertirDTO)
                .toList();
+    }
+
+    private Region convertirEntidad(RegionDTO dto) {
+        Region region = new Region();
+        region.setId(dto.getId());
+        region.setNombre(dto.getNombre());
+        return region;
     }
 
     public RegionDTO convertirDTO(Region region)

@@ -22,7 +22,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "runa")
-public class Runa {
+public class Runa 
+{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     //Identificador de la runa

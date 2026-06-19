@@ -31,17 +31,15 @@ public class DimensionService {
 
     public DimensionDTO guardarDimension(DimensionDTO dimensionDTO)
     {
-        Dimension dimension = new Dimension();
-        dimension.setNombre(dimensionDTO.getNombre());
-        dimension.setDescripcion(dimensionDTO.getDescripcion());
-
-        return convertirADTO(dimensionRepository.save(dimension));
+        Dimension dimension = convertirEntidad(dimensionDTO);
+        dimensionRepository.save(dimension);
+        return dimensionDTO;
     }
 
     public DimensionDTO actualizarDimension(Integer id, DimensionDTO dimensionDTO)
     {
         Dimension dimension = dimensionRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id " + id));
+            .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id" + id));
 
         if(dimensionDTO.getNombre() != null)
         {
@@ -51,7 +49,8 @@ public class DimensionService {
         {
             dimension.setDescripcion(dimensionDTO.getDescripcion());
         }
-        return convertirADTO(dimensionRepository.save(dimension));
+        dimensionRepository.save(dimension);
+        return convertirADTO(dimension);
     }
 
     public String eliminarDimension(Integer id) 
@@ -67,6 +66,14 @@ public class DimensionService {
         {
             return e.getMessage();
         }
+    }
+
+    private Dimension convertirEntidad(DimensionDTO dto) {
+        Dimension dimension = new Dimension();
+        dimension.setId(dto.getId());
+        dimension.setNombre(dto.getNombre());
+        dimension.setDescripcion(dto.getDescripcion());
+        return dimension;
     }
 
     private DimensionDTO convertirADTO(Dimension dimension) {
