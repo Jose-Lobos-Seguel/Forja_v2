@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.EquipamientoDTO;
-import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.service.EquipamientoService;
 
 @RestController
@@ -30,7 +29,7 @@ public class EquipamientoController
     @GetMapping
     public ResponseEntity<List<EquipamientoDTO>> obtenerTodos() 
     {
-        List<EquipamientoDTO> equipamientos = equipamientoService.obtenerTodos();
+        List<EquipamientoDTO> equipamientos = equipamientoService.listar();
 
         return ResponseEntity.ok(equipamientos);
     }
@@ -53,27 +52,28 @@ public class EquipamientoController
     }
 
     @PostMapping
-    public ResponseEntity<Equipamiento> guardar(@RequestBody Equipamiento equipamiento)
-    {
-        Equipamiento nuevoEquipamiento = equipamientoService.guardar(equipamiento);
+    public ResponseEntity<EquipamientoDTO> guardar(@RequestBody EquipamientoDTO dto) {
+        EquipamientoDTO nuevoEquipamiento = equipamientoService.guardar(dto);
 
-        return new ResponseEntity<>(nuevoEquipamiento,HttpStatus.CREATED);
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(nuevoEquipamiento);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable Integer id) 
     {
 
-        String resultado = equipamientoService.eliminarMaterial(id);
+        String resultado = equipamientoService.eliminar(id);
         return ResponseEntity.ok(resultado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody Equipamiento equipamientoActualizado) 
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody EquipamientoDTO equipamientoDTO) 
     {
         try 
         {
-            Equipamiento actualizado = equipamientoService.updateEquipamiento(id,equipamientoActualizado);
+            EquipamientoDTO actualizado = equipamientoService.actualizar(id,equipamientoDTO);
             return ResponseEntity.ok(actualizado);
 
         }

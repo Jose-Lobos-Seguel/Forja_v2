@@ -7,6 +7,7 @@ import com.mlg.forja.modelo.Tipo;
 import com.mlg.forja.DTO.TipoDTO;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.repository.TipoRepository;
+import com.mlg.forja.repository.EquipamientoRepository;
 import jakarta.transaction.Transactional;
 
 @Transactional
@@ -14,6 +15,9 @@ import jakarta.transaction.Transactional;
 public class TipoService {
     @Autowired
     private TipoRepository tipoRepository;
+
+    @Autowired
+    private EquipamientoRepository equipamientoRepository;
 
     public List<TipoDTO> obtenerTodos()
     {
@@ -39,16 +43,58 @@ public class TipoService {
         }
     }
 
-    public Tipo guardarTipo(Tipo tipo) {
-       return tipoRepository.save(tipo);
+    public TipoDTO guardarTipo(TipoDTO tipoDTO) {
+       Tipo tipo = convertirEntidad(tipoDTO);
+       tipoRepository.save(tipo);
+       
+       // Asignar equipamientos al tipo si se proporciona
+       if(tipoDTO.getEquipamientosIds() != null && !tipoDTO.getEquipamientosIds().isEmpty()) {
+           List<Equipamiento> equipamientos = equipamientoRepository.findAllById(tipoDTO.getEquipamientosIds());
+           for(Equipamiento equipamiento : equipamientos) {
+               equipamiento.setTipo(tipo);
+               equipamientoRepository.save(equipamiento);
+           }
+       }
+       
+       return convertirDTO(tipo);
     }
 
-    public List<Tipo> buscarPorNombre(String nombre){
-       return tipoRepository.findByNombre(nombre);
+    public TipoDTO actualizarTipo(Integer id, TipoDTO tipoDTO) {
+       Tipo tipo = tipoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("El tipo de equipamiento que intenta actualizar no existe"));
+       if(tipoDTO.getNombre() != null) {
+           tipo.setNombre(tipoDTO.getNombre());
+       }
+       
+       // Asignar equipamientos al tipo si se proporciona
+       if(tipoDTO.getEquipamientosIds() != null && !tipoDTO.getEquipamientosIds().isEmpty()) {
+           List<Equipamiento> equipamientos = equipamientoRepository.findAllById(tipoDTO.getEquipamientosIds());
+           for(Equipamiento equipamiento : equipamientos) {
+               equipamiento.setTipo(tipo);
+               equipamientoRepository.save(equipamiento);
+           }
+       }
+       
+       tipoRepository.save(tipo);
+       return convertirDTO(tipo);
+    }
+
+    public List<TipoDTO> buscarPorNombre(String nombre){
+       return tipoRepository.findByNombre(nombre)
+               .stream()
+               .map(this::convertirDTO)
+               .toList();
     }
 
     public List<Tipo> buscarPorEquipamiento(Equipamiento equipamiento_id){
         return buscarPorEquipamiento(equipamiento_id);
+    }
+
+    private Tipo convertirEntidad(TipoDTO dto) {
+        Tipo tipo = new Tipo();
+        tipo.setId(dto.getId());
+        tipo.setNombre(dto.getNombre());
+        return tipo;
     }
 
     public TipoDTO convertirDTO(Tipo tipo)
@@ -65,7 +111,7 @@ public class TipoService {
                 .map(Equipamiento::getId)
                 .toList();
 
-            dto.setEquipamientoIds(tiposIds);
+            //dto.setEquipamientoIds(tiposIds);
         }
         return dto;
     }

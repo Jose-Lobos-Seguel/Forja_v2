@@ -23,7 +23,7 @@ public class MaterialDimensionService {
                 .toList();
     }
 
-    public MaterialDimension actualizarPureza(Integer id,Integer nuevaPureza) 
+    public MaterialDimensionDTO actualizarPureza(Integer id, Integer nuevaPureza) 
     {
 
         MaterialDimension materialDimension =
@@ -33,7 +33,21 @@ public class MaterialDimensionService {
 
         materialDimension.setPureza(nuevaPureza);
 
-        return materialDimensionRepository.save(materialDimension);
+        materialDimensionRepository.save(materialDimension);
+        return convertirADTO(materialDimension);
+    }
+
+    public MaterialDimensionDTO actualizar(Integer id, MaterialDimensionDTO materialDimensionDTO)
+    {
+        MaterialDimension materialDimension = materialDimensionRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Relación no encontrada"));
+        
+        if(materialDimensionDTO.getPureza() != null) {
+            materialDimension.setPureza(materialDimensionDTO.getPureza());
+        }
+        
+        materialDimensionRepository.save(materialDimension);
+        return convertirADTO(materialDimension);
     }
 
     public String eliminarRelacion(Integer id) 

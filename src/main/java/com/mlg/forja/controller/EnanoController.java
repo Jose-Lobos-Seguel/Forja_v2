@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.EnanoDTO;
-import com.mlg.forja.modelo.Enano;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.service.EnanoService;
 
@@ -51,15 +51,31 @@ public class EnanoController {
     }
 
     @PostMapping
-    public ResponseEntity<Enano> guardarEnano(@RequestBody Enano enano) 
+    public ResponseEntity<EnanoDTO> guardarEnano(@RequestBody EnanoDTO enanoDTO) 
     {
 
-        Enano nuevoEnano =
-                enanoService.guardarEnano(enano);
+        EnanoDTO nuevoEnano =
+                enanoService.guardarEnano(enanoDTO);
 
         return new ResponseEntity<>(
                 nuevoEnano,
                 HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarEnano(@PathVariable Integer id, @RequestBody EnanoDTO enanoDTO) 
+    {
+        try 
+        {
+            EnanoDTO actualizado = enanoService.actualizarEnano(id, enanoDTO);
+            return ResponseEntity.ok(actualizado);
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

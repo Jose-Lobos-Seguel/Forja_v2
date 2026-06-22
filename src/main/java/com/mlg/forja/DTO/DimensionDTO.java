@@ -9,6 +9,8 @@ public class DimensionDTO {
     private Integer id;
     private String nombre;
     private String descripcion;
-    // Lista de nombres o IDs de materiales para evitar cargar objetos pesados
+    // Lista de IDs de MaterialDimension para vincular materiales a esta dimensión
+    private List<Integer> materialDimensionIds;
+    // Lista de nombres de materiales (para lectura/display)
     private List<String> nombresMateriales;
 }

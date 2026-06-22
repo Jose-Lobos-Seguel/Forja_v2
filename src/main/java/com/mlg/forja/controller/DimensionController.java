@@ -5,10 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.DimensionDTO;
-import com.mlg.forja.modelo.Dimension;
 import com.mlg.forja.service.DimensionService;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 
-@Controller
+@RestController
 @RequestMapping("/forja/api/v1/dimensiones")
 public class DimensionController {
     @Autowired
@@ -46,9 +45,9 @@ public class DimensionController {
     }
 
     @PostMapping
-    public ResponseEntity<Dimension> crearDimension(@RequestBody Dimension dimension) {
+    public ResponseEntity<DimensionDTO> crearDimension(@RequestBody DimensionDTO dimensionDTO) {
         try {
-            Dimension guardada = dimensionService.guardarDimension(dimension);
+            DimensionDTO guardada = dimensionService.guardarDimension(dimensionDTO);
             return new ResponseEntity<>(guardada, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -56,9 +55,9 @@ public class DimensionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Dimension> actualizarDimension(@PathVariable Integer id, @RequestBody Dimension dimension) {
+    public ResponseEntity<DimensionDTO> actualizarDimension(@PathVariable Integer id, @RequestBody DimensionDTO dimensionDTO) {
         try {
-            Dimension actualizada = dimensionService.actualizarDimension(id, dimension);
+            DimensionDTO actualizada = dimensionService.actualizarDimension(id, dimensionDTO);
             return new ResponseEntity<>(actualizada, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

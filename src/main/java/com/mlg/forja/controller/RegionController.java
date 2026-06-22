@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.RegionDTO;
-import com.mlg.forja.modelo.Region;
 import com.mlg.forja.service.RegionService;
 
 @RestController
@@ -50,12 +50,28 @@ public class RegionController {
     }
 
     @PostMapping
-    public ResponseEntity<Region> guardarRegion(@RequestBody Region region) 
+    public ResponseEntity<RegionDTO> guardarRegion(@RequestBody RegionDTO regionDTO) 
     {
-        Region nuevaRegion = regionService.guardarRegion(region);
+        RegionDTO nuevaRegion = regionService.guardarRegion(regionDTO);
         return new ResponseEntity<>(
                 nuevaRegion,
                 HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarRegion(@PathVariable Integer id, @RequestBody RegionDTO regionDTO) 
+    {
+        try 
+        {
+            RegionDTO actualizado = regionService.actualizarRegion(id, regionDTO);
+            return ResponseEntity.ok(actualizado);
+        }
+        catch (RuntimeException e)
+        {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

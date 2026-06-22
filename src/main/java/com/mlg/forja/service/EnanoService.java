@@ -60,9 +60,51 @@ public class EnanoService
         }
     }
 
-    public Enano guardarEnano(Enano enano) {
+    public EnanoDTO guardarEnano(EnanoDTO enanoDTO) {
 
-       return enanoRepository.save(enano);
+       Enano enano = convertirEntidad(enanoDTO);
+
+       // Si se proporciona un clanId, vincular el enano al clan
+       if(enanoDTO.getClanId() != null) {
+           Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                   .orElseThrow(() -> new RuntimeException("El clan especificado no existe"));
+           enano.setClan(clan);
+       }
+
+       enanoRepository.save(enano);
+       return convertirDTO(enano);
+    }
+
+    public EnanoDTO actualizarEnano(Integer id, EnanoDTO enanoDTO) {
+
+       Enano enano = enanoRepository.findById(id)
+             .orElseThrow(() -> new RuntimeException("El enano que intenta actualizar no existe"));
+
+       if(enanoDTO.getNombre() != null) {
+           enano.setNombre(enanoDTO.getNombre());
+       }
+       if(enanoDTO.getTitulo() != null) {
+           enano.setTitulo(enanoDTO.getTitulo());
+       }
+       if(enanoDTO.getApellido() != null) {
+           enano.setApellido(enanoDTO.getApellido());
+       }
+       if(enanoDTO.getEspecialidad() != null) {
+           enano.setEspecialidad(enanoDTO.getEspecialidad());
+       }
+
+       // Manejar la asignación del clan al enano
+       if(enanoDTO.getClanId() != null) {
+           Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                   .orElseThrow(() -> new RuntimeException("El clan especificado no existe"));
+           enano.setClan(clan);
+       } else if(enanoDTO.getClanId() == null && enano.getClan() != null) {
+           // Si se envía clanId = null, desvincula el enano del clan
+           enano.setClan(null);
+       }
+
+       enanoRepository.save(enano);
+       return convertirDTO(enano);
     }
 
     public List<EnanoDTO> buscarPorNombre(String nombre){
@@ -116,6 +158,16 @@ public class EnanoService
         equipamientoRepository.save(equipamiento);
 
         return "El equipamiento '" + equipamiento.getNombre() + "' ya no posee un forjador asignado.";
+    }
+
+    private Enano convertirEntidad(EnanoDTO dto) {
+        Enano enano = new Enano();
+        enano.setId(dto.getId());
+        enano.setNombre(dto.getNombre());
+        enano.setTitulo(dto.getTitulo());
+        enano.setApellido(dto.getApellido());
+        enano.setEspecialidad(dto.getEspecialidad());
+        return enano;
     }
 
     public EnanoDTO convertirDTO(Enano enano)

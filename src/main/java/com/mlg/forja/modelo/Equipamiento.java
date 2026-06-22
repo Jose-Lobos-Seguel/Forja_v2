@@ -64,7 +64,7 @@ public class Equipamiento
 
     @OneToMany(mappedBy = "equipamiento")
     //Indica los materiales del cual esta compuesto el equipamiento
-    private List<Material> materiales;
+    private List<MaterialDimension> materiales;
 
     @OneToMany(mappedBy = "equipamiento")
     //Indica las runas que estan inbuidas en el equipamiento

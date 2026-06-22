@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.mlg.forja.DTO.DimensionDTO;
 import com.mlg.forja.modelo.Dimension;
+import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.repository.DimensionRepository;
+import com.mlg.forja.repository.MaterialDimensionRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -16,6 +18,9 @@ import jakarta.transaction.Transactional;
 public class DimensionService {
     @Autowired
     private DimensionRepository dimensionRepository;
+
+    @Autowired
+    private MaterialDimensionRepository materialDimensionRepository;
 
     public List<DimensionDTO> obtenerTodas() {
         return dimensionRepository.findAll().stream()
@@ -29,29 +34,48 @@ public class DimensionService {
         return convertirADTO(dimension);
     }
 
-    public Dimension guardarDimension(Dimension dimension)
+    public DimensionDTO guardarDimension(DimensionDTO dimensionDTO)
     {
-        return dimensionRepository.save(dimension);
+        Dimension dimension = convertirEntidad(dimensionDTO);
+        dimensionRepository.save(dimension);
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
+        }
+        
+        return convertirADTO(dimension);
     }
 
-    public Dimension actualizarDimension(Integer id, Dimension dimensionActualizada)
+    public DimensionDTO actualizarDimension(Integer id, DimensionDTO dimensionDTO)
     {
         Dimension dimension = dimensionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id" + id));
 
-        if(dimensionActualizada.getNombre() != null)
+        if(dimensionDTO.getNombre() != null)
         {
-            dimension.setNombre(dimensionActualizada.getNombre());
+            dimension.setNombre(dimensionDTO.getNombre());
         }
-        if(dimensionActualizada.getDescripcion() != null)
+        if(dimensionDTO.getDescripcion() != null)
         {
-            dimension.setDescripcion(dimensionActualizada.getDescripcion());
+            dimension.setDescripcion(dimensionDTO.getDescripcion());
         }
-        if(dimensionActualizada.getMateriales() != null)
-        {
-            dimension.setMateriales(dimensionActualizada.getMateriales());
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
         }
-        return dimensionRepository.save(dimension);
+        
+        dimensionRepository.save(dimension);
+        return convertirADTO(dimension);
     }
 
     public String eliminarDimension(Integer id) 
@@ -67,6 +91,14 @@ public class DimensionService {
         {
             return e.getMessage();
         }
+    }
+
+    private Dimension convertirEntidad(DimensionDTO dto) {
+        Dimension dimension = new Dimension();
+        dimension.setId(dto.getId());
+        dimension.setNombre(dto.getNombre());
+        dimension.setDescripcion(dto.getDescripcion());
+        return dimension;
     }
 
     private DimensionDTO convertirADTO(Dimension dimension) {

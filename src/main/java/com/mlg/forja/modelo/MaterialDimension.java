@@ -37,6 +37,13 @@ public class MaterialDimension
     private Integer pureza;
 
     @ManyToOne
+    @JoinColumn(name = "equipamiento_id")
+    //Relaciona material con equipamiento por equipamiento_id
+    //indica que un equipamiento x esta compuesto por x,y,z materiales
+    //la lista para almacenar los materiales se instancia en la clase equipamiento
+    private Equipamiento equipamiento;
+
+    @ManyToOne
     @JoinColumn(name = "material_id")
     //Relacion entre el material y esta clase
     //Junto a la relacion "dimension_id" convierten a esta clase en tabla intermedia
