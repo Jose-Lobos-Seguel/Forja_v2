@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -45,12 +46,14 @@ public class MaterialDimension
 
     @ManyToOne
     @JoinColumn(name = "material_id")
+    @ToString.Exclude
     //Relacion entre el material y esta clase
     //Junto a la relacion "dimension_id" convierten a esta clase en tabla intermedia
     private Material material;
 
     @ManyToOne
     @JoinColumn(name = "dimension_id")
+    @ToString.Exclude
     //Relacion entre la dimension y esta clase
     //Junto a la relacion "material_id" convierten a esta clase en tabla intermedia
     private Dimension dimension;

@@ -56,43 +56,9 @@ public class ClanService {
         }
     }
     
-    public ClanDTO guardarClan(ClanDTO clanDTO) {
+    public Clan guardarClan(Clan clan) {
 
-       Clan clan = convertirEntidad(clanDTO);
-       clanRepository.save(clan);
-
-       // Asignar enanos al clan si se proporciona la lista
-       if(clanDTO.getEnanosIds() != null && !clanDTO.getEnanosIds().isEmpty()) {
-           List<Enano> enanos = enanoRepository.findAllById(clanDTO.getEnanosIds());
-           for(Enano enano : enanos) {
-               enano.setClan(clan);
-               enanoRepository.save(enano);
-           }
-       }
-
-       return convertirDTO(clan);
-    }
-
-    public ClanDTO actualizarClan(Integer id, ClanDTO clanDTO) {
-
-       Clan clan = clanRepository.findById(id)
-             .orElseThrow(() -> new RuntimeException("El clan de enanos que intenta actualizar no existe"));
-
-       if(clanDTO.getNombre() != null) {
-           clan.setNombre(clanDTO.getNombre());
-       }
-
-       // Manejar la asignación de enanos al clan
-       if(clanDTO.getEnanosIds() != null && !clanDTO.getEnanosIds().isEmpty()) {
-           List<Enano> enanos = enanoRepository.findAllById(clanDTO.getEnanosIds());
-           for(Enano enano : enanos) {
-               enano.setClan(clan);
-               enanoRepository.save(enano);
-           }
-       }
-
-       clanRepository.save(clan);
-       return convertirDTO(clan);
+       return clanRepository.save(clan);
     }
 
     public List<ClanDTO> buscarPorNombre(String nombre){
@@ -113,13 +79,6 @@ public class ClanService {
             .map(this::convertirEnanoDTO)
             .toList();
     }
-    private Clan convertirEntidad(ClanDTO dto) {
-        Clan clan = new Clan();
-        clan.setId(dto.getId());
-        clan.setNombre(dto.getNombre());
-        return clan;
-    }
-
     public ClanDTO convertirDTO(Clan clan)
     {
         ClanDTO dto = new ClanDTO();

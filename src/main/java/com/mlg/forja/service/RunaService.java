@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import com.mlg.forja.DTO.EquipamientoRunaDTO;
 import com.mlg.forja.DTO.RunaDTO;
 import com.mlg.forja.modelo.Runa;
-import com.mlg.forja.modelo.EquipamientoRunaEntidad;
 import com.mlg.forja.repository.RunaRepository;
-import com.mlg.forja.repository.EquipamientoRunaRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -20,9 +18,6 @@ public class RunaService
 {
     @Autowired
     private RunaRepository runaRepository;
-
-    @Autowired
-    private EquipamientoRunaRepository equipamientoRunaRepository;
 
     public List<RunaDTO> obtenerTodas() 
     {
@@ -37,49 +32,23 @@ public class RunaService
         return convertirADTO(runa);
     }
 
-    public RunaDTO actualizar(Integer id, RunaDTO runaDTO) 
+    public Runa actualizar(Integer id, Runa runaActualizada) 
     {
 
     Runa runa = runaRepository.findById(id)
         .orElseThrow(() ->
             new RuntimeException("No existe la runa con ID: " + id));
                     
-    if(runaDTO.getNombre() != null) {
-        runa.setNombre(runaDTO.getNombre());
-    }
-    if(runaDTO.getElemento() != null) {
-        runa.setElemento(runaDTO.getElemento());
-    }
-    
-    // Vincular EquipamientoRunaEntidades si se proporcionan
-    if(runaDTO.getEquipamientosIds() != null && !runaDTO.getEquipamientosIds().isEmpty()) {
-        List<EquipamientoRunaEntidad> equipamientos = equipamientoRunaRepository.findAllById(runaDTO.getEquipamientosIds());
-        for(EquipamientoRunaEntidad equipRuna : equipamientos) {
-            equipRuna.setRuna(runa);
-            equipamientoRunaRepository.save(equipRuna);
-        }
-    }
+    runa.setNombre(runaActualizada.getNombre());
+    runa.setElemento(runaActualizada.getElemento());
 
-    runaRepository.save(runa);
-    return convertirADTO(runa);
+    return runaRepository.save(runa);
 
     }
 
-    public RunaDTO guardar(RunaDTO runaDTO) 
+    public Runa guardar(Runa runa) 
     {
-        Runa runa = convertirEntidad(runaDTO);
-        runaRepository.save(runa);
-        
-        // Vincular EquipamientoRunaEntidades si se proporcionan
-        if(runaDTO.getEquipamientosIds() != null && !runaDTO.getEquipamientosIds().isEmpty()) {
-            List<EquipamientoRunaEntidad> equipamientos = equipamientoRunaRepository.findAllById(runaDTO.getEquipamientosIds());
-            for(EquipamientoRunaEntidad equipRuna : equipamientos) {
-                equipRuna.setRuna(runa);
-                equipamientoRunaRepository.save(equipRuna);
-            }
-        }
-        
-        return runaDTO;
+        return runaRepository.save(runa);
     }
 
     public String eliminar(Integer id) {
@@ -87,14 +56,6 @@ public class RunaService
                 .orElseThrow(() -> new RuntimeException("No existe la runa con ID: " + id));
         runaRepository.delete(runa);
         return "La runa '" + runa.getNombre() + "' ha sido destruida.";
-    }
-
-    private Runa convertirEntidad(RunaDTO dto) {
-        Runa runa = new Runa();
-        runa.setId(dto.getId());
-        runa.setNombre(dto.getNombre());
-        runa.setElemento(dto.getElemento());
-        return runa;
     }
 
     private RunaDTO convertirADTO(Runa runa) 

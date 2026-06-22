@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.EquipamientoDTO;
+import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.service.EquipamientoService;
 
 @RestController
@@ -69,11 +70,11 @@ public class EquipamientoController
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody EquipamientoDTO equipamientoDTO) 
+    public ResponseEntity<?> actualizar(@PathVariable Integer id,@RequestBody Equipamiento equipamientoActualizado) 
     {
         try 
         {
-            EquipamientoDTO actualizado = equipamientoService.actualizar(id,equipamientoDTO);
+            EquipamientoDTO actualizado = equipamientoService.actualizar(id,equipamientoActualizado);
             return ResponseEntity.ok(actualizado);
 
         }
