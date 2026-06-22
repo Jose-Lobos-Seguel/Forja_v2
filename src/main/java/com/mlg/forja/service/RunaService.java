@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import com.mlg.forja.DTO.EquipamientoRunaDTO;
 import com.mlg.forja.DTO.RunaDTO;
 import com.mlg.forja.modelo.Runa;
+import com.mlg.forja.modelo.EquipamientoRunaEntidad;
 import com.mlg.forja.repository.RunaRepository;
+import com.mlg.forja.repository.EquipamientoRunaRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -18,6 +20,9 @@ public class RunaService
 {
     @Autowired
     private RunaRepository runaRepository;
+
+    @Autowired
+    private EquipamientoRunaRepository equipamientoRunaRepository;
 
     public List<RunaDTO> obtenerTodas() 
     {
@@ -45,6 +50,15 @@ public class RunaService
     if(runaDTO.getElemento() != null) {
         runa.setElemento(runaDTO.getElemento());
     }
+    
+    // Vincular EquipamientoRunaEntidades si se proporcionan
+    if(runaDTO.getEquipamientosIds() != null && !runaDTO.getEquipamientosIds().isEmpty()) {
+        List<EquipamientoRunaEntidad> equipamientos = equipamientoRunaRepository.findAllById(runaDTO.getEquipamientosIds());
+        for(EquipamientoRunaEntidad equipRuna : equipamientos) {
+            equipRuna.setRuna(runa);
+            equipamientoRunaRepository.save(equipRuna);
+        }
+    }
 
     runaRepository.save(runa);
     return convertirADTO(runa);
@@ -55,6 +69,16 @@ public class RunaService
     {
         Runa runa = convertirEntidad(runaDTO);
         runaRepository.save(runa);
+        
+        // Vincular EquipamientoRunaEntidades si se proporcionan
+        if(runaDTO.getEquipamientosIds() != null && !runaDTO.getEquipamientosIds().isEmpty()) {
+            List<EquipamientoRunaEntidad> equipamientos = equipamientoRunaRepository.findAllById(runaDTO.getEquipamientosIds());
+            for(EquipamientoRunaEntidad equipRuna : equipamientos) {
+                equipRuna.setRuna(runa);
+                equipamientoRunaRepository.save(equipRuna);
+            }
+        }
+        
         return runaDTO;
     }
 

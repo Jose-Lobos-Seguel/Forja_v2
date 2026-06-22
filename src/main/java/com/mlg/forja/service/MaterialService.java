@@ -30,16 +30,28 @@ public class MaterialService
 
     public MaterialDTO guardar(MaterialDTO dto) {
         Material entidad = convertirEntidad(dto);
-        List<MaterialDimension> listaRelaciones = new ArrayList<>();
-        if(crearRelacion(dto) != null)
-        {
-            listaRelaciones.addAll(crearRelacion(dto));
-            for (MaterialDimension relacion : listaRelaciones) {
-                materialDimensionRepository.save(relacion);                
-            }
-        }
         materialRepository.save(entidad);
-        return dto;
+        
+        // Crear relaciones MaterialDimension si se proporcionan dimensionesIds y purezas
+        List<Integer> dimensionesIds = dto.getDimensionesIds();
+        List<Integer> purezas = dto.getPurezas();
+        
+        if(dimensionesIds != null && purezas != null && 
+           dimensionesIds.size() == purezas.size() && 
+           !dimensionesIds.isEmpty()) {
+            
+            for(int i = 0; i < dimensionesIds.size(); i++) {
+        final int index = i;
+        MaterialDimension relacion = new MaterialDimension();
+        relacion.setMaterial(entidad);
+        relacion.setDimension(dimensionRepository.findById(dimensionesIds.get(index))
+        .orElseThrow(() -> new RuntimeException("Dimensión no encontrada con id: " + dimensionesIds.get(index))));
+        relacion.setPureza(purezas.get(index));
+        materialDimensionRepository.save(relacion);
+    }
+        }
+        
+        return convertirDTO(entidad);
     }
 
     public List<MaterialDTO> listar() {
@@ -57,18 +69,37 @@ public class MaterialService
     }
 
     public MaterialDTO actualizar(Integer id, MaterialDTO materialActualizado) {
-        Material entidadActualizada = convertirEntidad(materialActualizado);
         Material material = materialRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("No se pudo encontrar un material con ese id"));
         
-        if(entidadActualizada.getNombre() != null)
+        if(materialActualizado.getNombre() != null)
         {
-            material.setNombre(entidadActualizada.getNombre());
+            material.setNombre(materialActualizado.getNombre());
         }
-        if(entidadActualizada.getDimensiones() != null)
-        {
-            material.setDimensiones(entidadActualizada.getDimensiones());
+        
+        // Actualizar relaciones MaterialDimension si se proporcionan
+        List<Integer> dimensionesIds = materialActualizado.getDimensionesIds();
+        List<Integer> purezas = materialActualizado.getPurezas();
+        
+        if(dimensionesIds != null && purezas != null &&
+           dimensionesIds.size() == purezas.size() &&
+           !dimensionesIds.isEmpty()) {
+            
+            // Eliminar relaciones antiguas
+            List<MaterialDimension> relacionesAntiguos = materialDimensionRepository.findAllByMaterial(material);
+            materialDimensionRepository.deleteAll(relacionesAntiguos);
+            
+            // Crear nuevas relaciones
+            for(int i = 0; i < dimensionesIds.size(); i++) { final int index = i;
+                MaterialDimension relacion = new MaterialDimension();
+                relacion.setMaterial(material);
+                relacion.setDimension(dimensionRepository.findById(dimensionesIds.get(index))
+                    .orElseThrow(() -> new RuntimeException("Dimensión no encontrada con id: " + dimensionesIds.get(index))));
+                relacion.setPureza(purezas.get(index));
+                materialDimensionRepository.save(relacion);
+            }
         }
+        
         materialRepository.save(material);
         return convertirDTO(material);
     }

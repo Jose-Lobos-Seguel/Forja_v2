@@ -63,8 +63,16 @@ public class EnanoService
     public EnanoDTO guardarEnano(EnanoDTO enanoDTO) {
 
        Enano enano = convertirEntidad(enanoDTO);
+
+       // Si se proporciona un clanId, vincular el enano al clan
+       if(enanoDTO.getClanId() != null) {
+           Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                   .orElseThrow(() -> new RuntimeException("El clan especificado no existe"));
+           enano.setClan(clan);
+       }
+
        enanoRepository.save(enano);
-       return enanoDTO;
+       return convertirDTO(enano);
     }
 
     public EnanoDTO actualizarEnano(Integer id, EnanoDTO enanoDTO) {
@@ -81,6 +89,20 @@ public class EnanoService
        if(enanoDTO.getApellido() != null) {
            enano.setApellido(enanoDTO.getApellido());
        }
+       if(enanoDTO.getEspecialidad() != null) {
+           enano.setEspecialidad(enanoDTO.getEspecialidad());
+       }
+
+       // Manejar la asignación del clan al enano
+       if(enanoDTO.getClanId() != null) {
+           Clan clan = clanRepository.findById(enanoDTO.getClanId())
+                   .orElseThrow(() -> new RuntimeException("El clan especificado no existe"));
+           enano.setClan(clan);
+       } else if(enanoDTO.getClanId() == null && enano.getClan() != null) {
+           // Si se envía clanId = null, desvincula el enano del clan
+           enano.setClan(null);
+       }
+
        enanoRepository.save(enano);
        return convertirDTO(enano);
     }

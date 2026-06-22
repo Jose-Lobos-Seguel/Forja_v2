@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.mlg.forja.DTO.DimensionDTO;
 import com.mlg.forja.modelo.Dimension;
+import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.repository.DimensionRepository;
+import com.mlg.forja.repository.MaterialDimensionRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -16,6 +18,9 @@ import jakarta.transaction.Transactional;
 public class DimensionService {
     @Autowired
     private DimensionRepository dimensionRepository;
+
+    @Autowired
+    private MaterialDimensionRepository materialDimensionRepository;
 
     public List<DimensionDTO> obtenerTodas() {
         return dimensionRepository.findAll().stream()
@@ -33,7 +38,17 @@ public class DimensionService {
     {
         Dimension dimension = convertirEntidad(dimensionDTO);
         dimensionRepository.save(dimension);
-        return dimensionDTO;
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
+        }
+        
+        return convertirADTO(dimension);
     }
 
     public DimensionDTO actualizarDimension(Integer id, DimensionDTO dimensionDTO)
@@ -49,6 +64,16 @@ public class DimensionService {
         {
             dimension.setDescripcion(dimensionDTO.getDescripcion());
         }
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
+        }
+        
         dimensionRepository.save(dimension);
         return convertirADTO(dimension);
     }

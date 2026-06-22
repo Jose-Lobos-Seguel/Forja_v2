@@ -7,6 +7,7 @@ import com.mlg.forja.modelo.Tipo;
 import com.mlg.forja.DTO.TipoDTO;
 import com.mlg.forja.modelo.Equipamiento;
 import com.mlg.forja.repository.TipoRepository;
+import com.mlg.forja.repository.EquipamientoRepository;
 import jakarta.transaction.Transactional;
 
 @Transactional
@@ -14,6 +15,9 @@ import jakarta.transaction.Transactional;
 public class TipoService {
     @Autowired
     private TipoRepository tipoRepository;
+
+    @Autowired
+    private EquipamientoRepository equipamientoRepository;
 
     public List<TipoDTO> obtenerTodos()
     {
@@ -42,7 +46,17 @@ public class TipoService {
     public TipoDTO guardarTipo(TipoDTO tipoDTO) {
        Tipo tipo = convertirEntidad(tipoDTO);
        tipoRepository.save(tipo);
-       return tipoDTO;
+       
+       // Asignar equipamientos al tipo si se proporciona
+       if(tipoDTO.getEquipamientosIds() != null && !tipoDTO.getEquipamientosIds().isEmpty()) {
+           List<Equipamiento> equipamientos = equipamientoRepository.findAllById(tipoDTO.getEquipamientosIds());
+           for(Equipamiento equipamiento : equipamientos) {
+               equipamiento.setTipo(tipo);
+               equipamientoRepository.save(equipamiento);
+           }
+       }
+       
+       return convertirDTO(tipo);
     }
 
     public TipoDTO actualizarTipo(Integer id, TipoDTO tipoDTO) {
@@ -51,6 +65,16 @@ public class TipoService {
        if(tipoDTO.getNombre() != null) {
            tipo.setNombre(tipoDTO.getNombre());
        }
+       
+       // Asignar equipamientos al tipo si se proporciona
+       if(tipoDTO.getEquipamientosIds() != null && !tipoDTO.getEquipamientosIds().isEmpty()) {
+           List<Equipamiento> equipamientos = equipamientoRepository.findAllById(tipoDTO.getEquipamientosIds());
+           for(Equipamiento equipamiento : equipamientos) {
+               equipamiento.setTipo(tipo);
+               equipamientoRepository.save(equipamiento);
+           }
+       }
+       
        tipoRepository.save(tipo);
        return convertirDTO(tipo);
     }
