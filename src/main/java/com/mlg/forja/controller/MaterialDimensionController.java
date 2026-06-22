@@ -8,16 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.MaterialDimensionDTO;
+import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.service.MaterialDimensionService;
 
-@RestController
+@Controller
 @RequestMapping("/forja/api/v1/material-dimension")
 public class MaterialDimensionController {
     @Autowired
@@ -43,25 +43,13 @@ public class MaterialDimensionController {
     }
 
     // Endpoint para actualizar la pureza de un material en una dimensión específica
-    @PutMapping("/{id}/pureza")
-    public ResponseEntity<MaterialDimensionDTO> actualizarPureza(@PathVariable Integer id, @RequestBody Integer nuevaPureza) {
+    @PatchMapping("/{id}/pureza")
+    public ResponseEntity<MaterialDimension> actualizarPureza(@PathVariable Integer id, @RequestBody Integer nuevaPureza) {
         try {
-            MaterialDimensionDTO actualizado = materialDimensionService.actualizarPureza(id, nuevaPureza);
+            MaterialDimension actualizado = materialDimensionService.actualizarPureza(id, nuevaPureza);
             return new ResponseEntity<>(actualizado, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody MaterialDimensionDTO materialDimensionDTO) {
-        try {
-            MaterialDimensionDTO actualizado = materialDimensionService.actualizar(id, materialDimensionDTO);
-            return ResponseEntity.ok(actualizado);
-        } catch (RuntimeException e) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
         }
     }
 
