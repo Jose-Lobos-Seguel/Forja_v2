@@ -2,6 +2,7 @@ package com.mlg.forja.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,36 +17,28 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mlg.forja.DTO.MaterialDTO;
 import com.mlg.forja.service.MaterialService;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/forja/api/v1/materiales")
 public class MaterialController {
 
-    private final MaterialService materialService;
+    @Autowired
+    private MaterialService materialService;
 
     @GetMapping
-    public ResponseEntity<List<MaterialDTO>> obtenerTodos() {
+    public ResponseEntity<List<MaterialDTO>> obtenerTodos() 
+    {
         List<MaterialDTO> materiales = materialService.listar();
 
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(materiales);
+        return ResponseEntity.ok(materiales);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<MaterialDTO> buscarPorId(@PathVariable Integer id) {
         try {
             MaterialDTO material = materialService.buscarPorId(id);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(material);
-        } 
-        catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+            return new ResponseEntity<>(material, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
@@ -64,16 +57,14 @@ public class MaterialController {
         try 
         {
             MaterialDTO actualizado = materialService.actualizar(id, dto);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(actualizado);
+            return ResponseEntity.ok(actualizado);
 
         }
         catch (RuntimeException e)
         {
             return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         }
     }
 
@@ -81,13 +72,9 @@ public class MaterialController {
     public ResponseEntity<String> eliminarMaterial(@PathVariable Integer id) {
         try {
             String resultado = materialService.eliminar(id);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(resultado);
+            return new ResponseEntity<>(resultado, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }

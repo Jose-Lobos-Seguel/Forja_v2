@@ -1,9 +1,9 @@
 package com.mlg.forja.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mlg.forja.DTO.MaterialDTO;
@@ -13,20 +13,46 @@ import com.mlg.forja.repository.DimensionRepository;
 import com.mlg.forja.repository.MaterialDimensionRepository;
 import com.mlg.forja.repository.MaterialRepository;
 
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class MaterialService 
 {
+    @Autowired
+    private MaterialDimensionRepository materialDimensionRepository;
 
-    private final MaterialRepository materialRepository;
-    private final MaterialDimensionRepository materialDimensionRepository;
-    private final DimensionRepository dimensionRepository;
-    private final EntityManager entityManager;
+    @Autowired
+    private DimensionRepository dimensionRepository;
+
+    @Autowired
+    private MaterialRepository materialRepository;
+
+    public MaterialDTO guardar(MaterialDTO dto) {
+        Material entidad = convertirEntidad(dto);
+        materialRepository.save(entidad);
+        
+        // Crear relaciones MaterialDimension si se proporcionan dimensionesIds y purezas
+        List<Integer> dimensionesIds = dto.getDimensionesIds();
+        List<Integer> purezas = dto.getPurezas();
+        
+        if(dimensionesIds != null && purezas != null && 
+           dimensionesIds.size() == purezas.size() && 
+           !dimensionesIds.isEmpty()) {
+            
+            for(int i = 0; i < dimensionesIds.size(); i++) {
+        final int index = i;
+        MaterialDimension relacion = new MaterialDimension();
+        relacion.setMaterial(entidad);
+        relacion.setDimension(dimensionRepository.findById(dimensionesIds.get(index))
+        .orElseThrow(() -> new RuntimeException("Dimensión no encontrada con id: " + dimensionesIds.get(index))));
+        relacion.setPureza(purezas.get(index));
+        materialDimensionRepository.save(relacion);
+    }
+        }
+        
+        return convertirDTO(entidad);
+    }
 
     public List<MaterialDTO> listar() {
         return materialRepository.findAll()
@@ -42,14 +68,6 @@ public class MaterialService
         return convertirDTO(material);
     }
 
-    public MaterialDTO guardar(MaterialDTO dto) {
-        Material entidadMaterial = convertirEntidad(dto);
-        Material materialGuardado = materialRepository.save(entidadMaterial);
-        List<MaterialDimension> relaciones = crearRelacion(materialGuardado, dto);
-        materialDimensionRepository.saveAll(relaciones);
-        return convertirDTO(materialGuardado);
-    }
-
     public MaterialDTO actualizar(Integer id, MaterialDTO materialActualizado) {
         Material material = materialRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("No se pudo encontrar un material con ese id"));
@@ -58,17 +76,32 @@ public class MaterialService
         {
             material.setNombre(materialActualizado.getNombre());
         }
-        if(materialActualizado.getDimensionesIds() != null)
-        {
-            material.getDimensiones().clear();
-            materialRepository.flush();
-
-            List<MaterialDimension> nuevasRelaciones = crearRelacion(material, materialActualizado);
-            material.getDimensiones().addAll(nuevasRelaciones);
+        
+        // Actualizar relaciones MaterialDimension si se proporcionan
+        List<Integer> dimensionesIds = materialActualizado.getDimensionesIds();
+        List<Integer> purezas = materialActualizado.getPurezas();
+        
+        if(dimensionesIds != null && purezas != null &&
+           dimensionesIds.size() == purezas.size() &&
+           !dimensionesIds.isEmpty()) {
+            
+            // Eliminar relaciones antiguas
+            List<MaterialDimension> relacionesAntiguos = materialDimensionRepository.findAllByMaterial(material);
+            materialDimensionRepository.deleteAll(relacionesAntiguos);
+            
+            // Crear nuevas relaciones
+            for(int i = 0; i < dimensionesIds.size(); i++) { final int index = i;
+                MaterialDimension relacion = new MaterialDimension();
+                relacion.setMaterial(material);
+                relacion.setDimension(dimensionRepository.findById(dimensionesIds.get(index))
+                    .orElseThrow(() -> new RuntimeException("Dimensión no encontrada con id: " + dimensionesIds.get(index))));
+                relacion.setPureza(purezas.get(index));
+                materialDimensionRepository.save(relacion);
+            }
         }
-        Material materialGuardado = materialRepository.saveAndFlush(material);
-        entityManager.refresh(materialGuardado);
-        return convertirDTO(materialGuardado);
+        
+        materialRepository.save(material);
+        return convertirDTO(material);
     }
 
     public String eliminar(Integer id) {
@@ -76,6 +109,7 @@ public class MaterialService
             Material material = materialRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No se pudo encontrar el material con ese id"));
             materialRepository.delete(material);
+
             List<MaterialDimension> relaciones = materialDimensionRepository.findAllByMaterial(material);
             List<Integer> relacionesIds = relaciones.stream()
                                                     .map(MaterialDimension::getId)
@@ -95,7 +129,7 @@ public class MaterialService
         List<Integer> listaPurezas = new ArrayList<>();
 
         for (MaterialDimension dimension : material.getDimensiones()) {
-            listaDimensionesId.add(dimension.getDimension().getId());
+            listaDimensionesId.add(dimension.getId());
             listaPurezas.add(dimension.getPureza());
         }
 
@@ -109,41 +143,40 @@ public class MaterialService
 
     public Material convertirEntidad(MaterialDTO dto) {
         Material entidad = new Material();
-
+        entidad.setId(dto.getId());
         entidad.setNombre(dto.getNombre());
-        if(dto.getDimensionesIds() != null)
-        {
-            entidad.setDimensiones(materialDimensionRepository.findAllById(dto.getDimensionesIds()));
-        }
+        entidad.setDimensiones(materialDimensionRepository.findAllById(dto.getDimensionesIds()));
 
         return entidad;
     }
 
-    public List<MaterialDimension> crearRelacion(Material material, MaterialDTO dto) {
-        if(material == null ||dto == null || dto.getDimensionesIds() == null || dto.getPurezas() == null)
+    public List<MaterialDimension> crearRelacion(MaterialDTO material) {
+        if((material.getDimensionesIds() != null && material.getPurezas() != null) && (material.getDimensionesIds().size() == material.getPurezas().size()))
         {
-            System.out.println("Alguna de las listas, material o dto viene null ");
-            return Collections.emptyList();
-        }
-        if(dto.getDimensionesIds().size() != dto.getPurezas().size() || dto.getDimensionesIds().size() == 0 || dto.getPurezas().size() == 0)
-        {
-            System.out.println("La cantidad de dimensiones y purezas no coinciden o vienen vacias");
-            return Collections.emptyList();
-        }
             List<MaterialDimension> listaRelaciones = new ArrayList<>();
-            List<Integer> listaPureza = dto.getPurezas();
-            List<Integer> listaDimensiones = dto.getDimensionesIds();
+            List<Integer> listaPureza = new ArrayList<>();
+            List<Integer> listaDimensiones = new ArrayList<>();
 
-            for (int i = 0 ; i < dto.getDimensionesIds().size(); i++) {
+            listaPureza.addAll(material.getPurezas());
+            listaDimensiones.addAll(material.getDimensionesIds());
+
+            for (int i = 0 ; i < material.getDimensionesIds().size() - 1; i++) {
                 MaterialDimension relacion = new MaterialDimension();
-                relacion.setMaterial(material);
-                relacion.setPureza(listaPureza.get(i));
-                relacion.setDimension(dimensionRepository.getReferenceById(listaDimensiones.get(i)));
-                
-                material.getDimensiones().add(relacion);
+                int pureza = listaPureza.get(i);
+                int dimensionId = listaDimensiones.get(i);
+
+                relacion.setMaterial(materialRepository.findById(material.getId())
+                    .orElseThrow(() -> new RuntimeException("No se pudo encontrar el material por el id " + material.getId())));
+
+                relacion.setPureza(pureza);
+                relacion.setDimension(dimensionRepository.findById(dimensionId)
+                    .orElseThrow(() -> new RuntimeException("No se pudo encontrar la dimension por el id " + dimensionId)));
+
                 listaRelaciones.add(relacion);
             }
-            System.out.println(listaRelaciones);
             return listaRelaciones;
+        }
+        System.out.println("La lista de dimensiones viene con ids de dimensiones que no existen, alguna lista viene null o hay cantidades diferentes de listas y purezas");
+        return null;
     }
 }

@@ -1,75 +1,81 @@
 package com.mlg.forja.service;
 
-import com.mlg.forja.repository.MaterialDimensionRepository;
-import com.mlg.forja.repository.MaterialRepository;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mlg.forja.DTO.DimensionDTO;
 import com.mlg.forja.modelo.Dimension;
 import com.mlg.forja.modelo.MaterialDimension;
 import com.mlg.forja.repository.DimensionRepository;
+import com.mlg.forja.repository.MaterialDimensionRepository;
 
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class DimensionService {
+    @Autowired
+    private DimensionRepository dimensionRepository;
 
-    private final MaterialRepository materialRepository;
-    private final MaterialDimensionRepository materialDimensionRepository;
-    private final DimensionRepository dimensionRepository;
-    private final EntityManager entityManager;
+    @Autowired
+    private MaterialDimensionRepository materialDimensionRepository;
 
-    public List<DimensionDTO> listar() {
+    public List<DimensionDTO> obtenerTodas() {
         return dimensionRepository.findAll().stream()
-                .map(this::convertirDTO)
+                .map(this::convertirADTO)
                 .toList();
     }
 
     public DimensionDTO buscarPorId(Integer id) {
         Dimension dimension = dimensionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡La dimensión no existe!"));
-        return convertirDTO(dimension);
+        return convertirADTO(dimension);
     }
 
-    public DimensionDTO guardar(DimensionDTO dto) {
-        Dimension entidadDimension = convertirEntidad(dto);
-        Dimension dimensionGuardada = dimensionRepository.save(entidadDimension);
-        List<MaterialDimension> relaciones = crearRelacion(dimensionGuardada, dto);
-        materialDimensionRepository.saveAll(relaciones);
-        return convertirDTO(dimensionGuardada);
+    public DimensionDTO guardarDimension(DimensionDTO dimensionDTO)
+    {
+        Dimension dimension = convertirEntidad(dimensionDTO);
+        dimensionRepository.save(dimension);
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
+        }
+        
+        return convertirADTO(dimension);
     }
 
-    public DimensionDTO actualizar(Integer id, DimensionDTO dimensionActualizada) {
+    public DimensionDTO actualizarDimension(Integer id, DimensionDTO dimensionDTO)
+    {
         Dimension dimension = dimensionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("No se pudo encontrar una dimension con el id" + id));
 
-        if(dimensionActualizada.getNombre() != null)
+        if(dimensionDTO.getNombre() != null)
         {
-            dimension.setNombre(dimensionActualizada.getNombre());
+            dimension.setNombre(dimensionDTO.getNombre());
         }
-        if(dimensionActualizada.getDescripcion() != null)
+        if(dimensionDTO.getDescripcion() != null)
         {
-            dimension.setDescripcion(dimensionActualizada.getDescripcion());
+            dimension.setDescripcion(dimensionDTO.getDescripcion());
         }
-        if(dimensionActualizada.getMaterialesIds() != null)
-        {
-            dimension.getMateriales().clear();
-            dimensionRepository.flush();
-
-            List<MaterialDimension> nuevasRelaciones = crearRelacion(dimension,dimensionActualizada);
-            dimension.getMateriales().addAll(nuevasRelaciones);
+        
+        // Vincular MaterialDimensions si se proporcionan
+        if(dimensionDTO.getMaterialDimensionIds() != null && !dimensionDTO.getMaterialDimensionIds().isEmpty()) {
+            List<MaterialDimension> materiales = materialDimensionRepository.findAllById(dimensionDTO.getMaterialDimensionIds());
+            for(MaterialDimension materialDim : materiales) {
+                materialDim.setDimension(dimension);
+                materialDimensionRepository.save(materialDim);
+            }
         }
-        Dimension dimensionGuardada = dimensionRepository.saveAndFlush(dimension);
-        entityManager.refresh(dimensionGuardada);
-        return convertirDTO(dimensionGuardada);
+        
+        dimensionRepository.save(dimension);
+        return convertirADTO(dimension);
     }
 
     public String eliminarDimension(Integer id) 
@@ -87,62 +93,25 @@ public class DimensionService {
         }
     }
 
-    private DimensionDTO convertirDTO(Dimension dimension) {
+    private Dimension convertirEntidad(DimensionDTO dto) {
+        Dimension dimension = new Dimension();
+        dimension.setId(dto.getId());
+        dimension.setNombre(dto.getNombre());
+        dimension.setDescripcion(dto.getDescripcion());
+        return dimension;
+    }
+
+    private DimensionDTO convertirADTO(Dimension dimension) {
         DimensionDTO dto = new DimensionDTO();
-        List<Integer> listaMaterialesIds = new ArrayList<>();
-        List<Integer> listaPurezas = new ArrayList<>();
-
-        for (MaterialDimension material : dimension.getMateriales()) {
-            listaMaterialesIds.add(material.getMaterial().getId());
-            listaPurezas.add(material.getPureza());
-        }
-
         dto.setId(dimension.getId());
         dto.setNombre(dimension.getNombre());
         dto.setDescripcion(dimension.getDescripcion());
-        dto.setMaterialesIds(listaMaterialesIds);
-        dto.setPurezas(listaPurezas);
-
-        return dto;
-    }
-
-    public Dimension convertirEntidad(DimensionDTO dto) {
-        Dimension entidad = new Dimension();
         
-        entidad.setNombre(dto.getNombre());
-        entidad.setDescripcion(dto.getDescripcion());
-        if(dto.getMaterialesIds() != null)
-        {
-            entidad.setMateriales(materialDimensionRepository.findAllById(dto.getMaterialesIds()));
+        if (dimension.getMateriales() != null) {
+            dto.setNombresMateriales(dimension.getMateriales().stream()
+                    .map(md -> md.getMaterial().getNombre())
+                    .toList());
         }
-        return entidad;
-    }
-
-    public List<MaterialDimension> crearRelacion(Dimension dimension, DimensionDTO dto) {
-        if(dimension == null ||dto == null || dto.getMaterialesIds() == null || dto.getPurezas() == null)
-        {
-            System.out.println("Alguna de las listas, dimension o dto viene null ");
-            return Collections.emptyList();
-        }
-        if(dto.getMaterialesIds().size() != dto.getPurezas().size() || dto.getMaterialesIds().size() == 0 || dto.getPurezas().size() == 0)
-        {
-            System.out.println("La cantidad de materiales y purezas no coinciden o vienen vacias");
-            return Collections.emptyList();
-        }
-            List<MaterialDimension> listaRelaciones = new ArrayList<>();
-            List<Integer> listaPureza = dto.getPurezas();
-            List<Integer> listaMateriales = dto.getMaterialesIds();
-
-            for (int i = 0 ; i < dto.getMaterialesIds().size(); i++) {
-                MaterialDimension relacion = new MaterialDimension();
-                relacion.setDimension(dimension);
-                relacion.setPureza(listaPureza.get(i));
-                relacion.setMaterial(materialRepository.getReferenceById(listaMateriales.get(i)));
-                
-                dimension.getMateriales().add(relacion);
-                listaRelaciones.add(relacion);
-            }
-            System.out.println(listaRelaciones);
-            return listaRelaciones;
+        return dto;
     }
 }

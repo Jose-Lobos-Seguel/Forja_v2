@@ -1,9 +1,6 @@
 package com.mlg.forja.modelo;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,12 +42,8 @@ public class Dimension
     //Descripcion de la dimension
     private String descripcion;
 
-    @OneToMany(
-        mappedBy = "dimension",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "dimension")
     //Relacion con la tabla MaterialDimension
     //indica los materiales que aparecen en esta dimension
-    private List<MaterialDimension> materiales = new ArrayList<>();
+    private List<MaterialDimension> materiales;
 }

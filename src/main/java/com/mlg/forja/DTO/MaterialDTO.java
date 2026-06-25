@@ -2,13 +2,12 @@ package com.mlg.forja.DTO;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-@JsonPropertyOrder({"id", "nombre", "dimensionesIds", "purezas"})
 public class MaterialDTO {
+    @NotNull
     private Integer id;
     private String nombre;
     private List<Integer> dimensionesIds;

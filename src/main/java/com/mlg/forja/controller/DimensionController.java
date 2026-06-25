@@ -2,13 +2,13 @@ package com.mlg.forja.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.mlg.forja.DTO.DimensionDTO;
 import com.mlg.forja.service.DimensionService;
-
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,63 +17,50 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/forja/api/v1/dimensiones")
 public class DimensionController {
-
-    private final DimensionService dimensionService;
+    @Autowired
+    private DimensionService dimensionService;
 
     @GetMapping
     public ResponseEntity<List<DimensionDTO>> obtenerTodas() {
-        List<DimensionDTO> dimensiones = dimensionService.listar();
+        List<DimensionDTO> dimensiones = dimensionService.obtenerTodas();
         if (dimensiones.isEmpty()) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(dimensiones);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(dimensiones);
+        return new ResponseEntity<>(dimensiones, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<DimensionDTO> buscarPorId(@PathVariable Integer id) {
         try {
             DimensionDTO dimension = dimensionService.buscarPorId(id);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(dimension);
+            return new ResponseEntity<>(dimension, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PostMapping
-    public ResponseEntity<DimensionDTO> guardar(@RequestBody DimensionDTO dto) {
-        DimensionDTO nuevaDimension = dimensionService.guardar(dto);
-
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(nuevaDimension);
+    public ResponseEntity<DimensionDTO> crearDimension(@RequestBody DimensionDTO dimensionDTO) {
+        try {
+            DimensionDTO guardada = dimensionService.guardarDimension(dimensionDTO);
+            return new ResponseEntity<>(guardada, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarDimension(@PathVariable Integer id, @RequestBody DimensionDTO dto) {
+    public ResponseEntity<DimensionDTO> actualizarDimension(@PathVariable Integer id, @RequestBody DimensionDTO dimensionDTO) {
         try {
-            DimensionDTO actualizada = dimensionService.actualizar(id, dto);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(actualizada);
+            DimensionDTO actualizada = dimensionService.actualizarDimension(id, dimensionDTO);
+            return new ResponseEntity<>(actualizada, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -81,13 +68,9 @@ public class DimensionController {
     public ResponseEntity<String> eliminarDimension(@PathVariable Integer id) {
         try {
             String resultado = dimensionService.eliminarDimension(id);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(resultado);
+            return new ResponseEntity<>(resultado, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 }
