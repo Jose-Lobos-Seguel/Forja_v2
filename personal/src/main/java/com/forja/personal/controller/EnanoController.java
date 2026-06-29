@@ -1,4 +1,4 @@
-package com.mlg.forja.controller;
+package com.forja.personal.controller;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mlg.forja.DTO.EnanoDTO;
-import com.mlg.forja.service.EnanoService;
+import com.forja.personal.DTO.EnanoDTO;
+import com.forja.personal.service.EnanoService;
 
 import lombok.RequiredArgsConstructor;
 
